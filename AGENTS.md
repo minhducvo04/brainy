@@ -1,7 +1,8 @@
 # Hackathon: instructions for every agent
 
 One rulebook for Claude Code (through `CLAUDE.md`), Codex, Cursor and any other agent in this folder.
-Owner: Duc (Minh Duc Vo). Goal: a working, demoable project by the deadline. Speed matters, but a demo that breaks is worse than a smaller one that works.
+Owner: Duc (Minh Duc Vo). Event: Build a Company Brain (cognee + Scalekit + Respan), 2026-10-07, deadline 6:00 PM PT; see `docs/event.md` and `docs/plans/2026-10-07-company-brain.md`.
+Goal: a working, demoable project by the deadline. Speed matters, but a demo that breaks is worse than a smaller one that works.
 
 ## 1. Hard rules
 1. **Never print secrets.** No `cat`, `grep` or `echo` of `.env` or a key; check length or prefix only. `.env` is gitignored.
