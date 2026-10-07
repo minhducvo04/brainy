@@ -5,3 +5,4 @@ One dated line per decision or merge, newest last.
 - 15:35 Merged package 3 Respan tracing b595e8d (keyless no-op, fake key wraps answer; live trace unverified).
 - 15:50 Pushed main e62941e to github.com/minhducvo04/brainy (Duc pushed; emails rewritten to no-reply, files identical to backup).
 - 16:13 Package 1 verified with real calls: alice 17 docs, bob 4, bob refused, share, bob answered with citations from both brains.
+- 16:25 Baseline eval 12/12 mean 1.000 after re-ingest under text-embedding-3-large; ceiling, so package 10 (harder held-out set) added for Cursor.

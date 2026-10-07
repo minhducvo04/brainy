@@ -1,6 +1,6 @@
 # Status (update after every merge)
 
-Last update: 2026-10-07 16:15 PT. Deadline 6:00 PM PT; feature freeze 5:15 PM. No `.env` yet: 1, 2, 4, 5 blocked.
+Last update: 2026-10-07 16:26 PT. Deadline 6:00 PM PT; feature freeze 5:15 PM. No `.env` yet: 1, 2, 4, 5 blocked.
 
 ## Done on main (built; real cognee, LLM and Scalekit calls NOT yet run: no keys)
 - Pull: `brain/pull.py`, `brain/act.py` (Scalekit Slack + GitHub per user, Slack post as the user, dry run and confirm).
@@ -12,13 +12,14 @@ Last update: 2026-10-07 16:15 PT. Deadline 6:00 PM PT; feature freeze 5:15 PM. N
 | # | Package | Files | Verify | Owner | State |
 |---|---|---|---|---|---|
 | 1 | First real run: ingest sample data for alice and bob, ask, share, ask | none (run only) | bob refuses, then answers after share | Planner | VERIFIED 16:13: alice 17 docs, bob 4; alice cited answer (Carol owns, 8 sources); bob "I can't see that."; after share bob cited answer from both brains |
-| 2 | Baseline eval and score | `runs/` (ignored) | `eval.score` prints a mean | Claude subagent (Sonnet, medium) | running (Sonnet subagent), share revoked for baseline |
+| 2 | Baseline eval and score | `runs/` (ignored) | `eval.score` prints a mean | Planner (subagent hit env issue) | VERIFIED 16:25: 12/12, mean 1.000 (ceiling; see package 10) |
 | 3 | Respan tracing on `agent.answer` (replace the `respan_trace` TODO) | `brain/agent.py` | one traced run opens in Respan | Claude subagent (Opus) | merged b595e8d; keyless + fake-key checked; live trace needs key |
 | 4 | The improvement (prompt + labeled context) + improved eval | `brain/agent.py` | after mean > before mean | Codex Sol 2 (medium); review Astra | building; measure after 1 and 2 |
 | 5 | Live pull: seed script, then pull as alice and bob | `scripts/seed_demo.py`, `sample_data/recorded/` | dry run counts; live pull counts | Claude Sonnet built 06626be; review Astra | in review; live needs `.env`, connections, Duc yes |
 | 6 | Slack user id to name mapping (live Slack returns ids) | `brain/pull.py` | names in saved file | Claude subagent (Sonnet) | merged da384dd; fake Slack test passes; tool name `slack_get_user_info` unverified live |
 | 8 | Gmail + Notion pull | `brain/pull.py`, `brain/records.py`, `brain/cli.py`, `tests/test_gmail_notion.py` | fake-response tests pass; live cites `[gmail ...]`, `[notion ...]` | Codex Astra built ce166b3; review Claude Opus lane | fix-first (pull failure loses other sources); back with author |
 | 9 | Fictional Gmail + Notion sample data (Typesense decision) | `sample_data/gmail.json`, `sample_data/notion.json`, `sample_data/README.md` | records builder tags both | Codex Sol 1 (light); review Claude Opus lane | building |
+| 10 | Harder held-out eval set (builders must not see it) | `scenarios/scenarios_v2.json` | valid JSON, 10 scenarios, scorer reads it | Cursor (composer-2.5) | building; then baseline v2 before package 4 merges |
 | 7 | Demo script rehearsal + `SUBMISSION.md` | `SUBMISSION.md` | 3-minute run end to end | Cursor (composer-2.5) drafted 5b896ab; review Astra | in review; rehearsal at 5:15 |
 
 ## Needs Duc
@@ -34,6 +35,8 @@ Last update: 2026-10-07 16:15 PT. Deadline 6:00 PM PT; feature freeze 5:15 PM. N
 - [ ] Yes before the submission PR to the event repo (public).
 
 ## Open questions
+- Embedding model changed between 16:17 and 16:19 (bge-small 384 to text-embedding-3-large 3072); re-ingested at 16:20. Do not change EMBEDDING_* in `.env` again without a re-ingest.
+- Shares cannot be revoked; demo reset = move `.cognee_system` and `.cognee_data` to `runs/` and re-ingest alice + bob (~1.5 min).
 - Live Slack may need channel ids instead of `#name`.
 - Model slug: `LLM_MODEL` defaults to `openai/gpt-5-mini`; if the gateway rejects it, use `gpt-5-mini`.
 - Tests need `PYTHONPATH=.` (plain `pytest -q` fails at collection on `brain`/`eval` imports).
