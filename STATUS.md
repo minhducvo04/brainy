@@ -1,6 +1,6 @@
 # Status (update after every merge)
 
-Last update: 2026-10-07 16:06 PT. Deadline 6:00 PM PT; feature freeze 5:15 PM. No `.env` yet: 1, 2, 4, 5 blocked.
+Last update: 2026-10-07 16:15 PT. Deadline 6:00 PM PT; feature freeze 5:15 PM. No `.env` yet: 1, 2, 4, 5 blocked.
 
 ## Done on main (built; real cognee, LLM and Scalekit calls NOT yet run: no keys)
 - Pull: `brain/pull.py`, `brain/act.py` (Scalekit Slack + GitHub per user, Slack post as the user, dry run and confirm).
@@ -11,8 +11,8 @@ Last update: 2026-10-07 16:06 PT. Deadline 6:00 PM PT; feature freeze 5:15 PM. N
 ## Package board (write your name in Owner before starting)
 | # | Package | Files | Verify | Owner | State |
 |---|---|---|---|---|---|
-| 1 | First real run: ingest sample data for alice and bob, ask, share, ask | none (run only) | bob refuses, then answers after share | Planner | waiting on Duc saving `.env` |
-| 2 | Baseline eval and score | `runs/` (ignored) | `eval.score` prints a mean | Claude subagent (Sonnet, medium) | queued, after 1 |
+| 1 | First real run: ingest sample data for alice and bob, ask, share, ask | none (run only) | bob refuses, then answers after share | Planner | VERIFIED 16:13: alice 17 docs, bob 4; alice cited answer (Carol owns, 8 sources); bob "I can't see that."; after share bob cited answer from both brains |
+| 2 | Baseline eval and score | `runs/` (ignored) | `eval.score` prints a mean | Claude subagent (Sonnet, medium) | running (Sonnet subagent), share revoked for baseline |
 | 3 | Respan tracing on `agent.answer` (replace the `respan_trace` TODO) | `brain/agent.py` | one traced run opens in Respan | Claude subagent (Opus) | merged b595e8d; keyless + fake-key checked; live trace needs key |
 | 4 | The improvement (prompt + labeled context) + improved eval | `brain/agent.py` | after mean > before mean | Codex Sol 2 (medium); review Astra | building; measure after 1 and 2 |
 | 5 | Live pull: seed script, then pull as alice and bob | `scripts/seed_demo.py`, `sample_data/recorded/` | dry run counts; live pull counts | Claude Sonnet built 06626be; review Astra | in review; live needs `.env`, connections, Duc yes |
@@ -22,12 +22,14 @@ Last update: 2026-10-07 16:06 PT. Deadline 6:00 PM PT; feature freeze 5:15 PM. N
 | 7 | Demo script rehearsal + `SUBMISSION.md` | `SUBMISSION.md` | 3-minute run end to end | Cursor (composer-2.5) drafted 5b896ab; review Astra | in review; rehearsal at 5:15 |
 
 ## Needs Duc
-- [ ] Yes on the example email + Notion page text (planner shows it first).
+- [x] Example email sent (to the +alice alias) and private Notion page created 16:11.
+- [ ] Look in the Respan dashboard for traces named `answer` (package 3 live check).
+- [ ] Name the Slack workspace for the live seed (yes given).
 - [ ] Scalekit connections `gmail` and `notion` too.
 - Lanes: Codex hackathon lane 0 Astra (gpt-6-astra, high) = reviewer/mentor; lane 1 Sol light, lane 2 Sol medium = builders; Claude Opus lane (Hackathon lane 0) = reviewer of Astra's own work; Cursor headless = docs/tests. Codex via `codex queue`.
 - [x] Commit email: rewritten to the GitHub no-reply address (backup branch `backup/main-before-email`).
 - [x] Repo https://github.com/minhducvo04/brainy (public); main pushed at e62941e.
-- [ ] `.env`: Respan key and the three Scalekit values.
+- [x] `.env` saved (real cognee + LLM + Respan calls work).
 - [ ] Scalekit AgentKit connections `slack` and `github`.
 - [ ] Yes before the submission PR to the event repo (public).
 

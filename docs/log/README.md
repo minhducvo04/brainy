@@ -4,3 +4,4 @@ One dated line per decision or merge, newest last.
 - 15:33 Merged package 6 Slack names da384dd (6 tests pass, faked Scalekit; live tool name unverified).
 - 15:35 Merged package 3 Respan tracing b595e8d (keyless no-op, fake key wraps answer; live trace unverified).
 - 15:50 Pushed main e62941e to github.com/minhducvo04/brainy (Duc pushed; emails rewritten to no-reply, files identical to backup).
+- 16:13 Package 1 verified with real calls: alice 17 docs, bob 4, bob refused, share, bob answered with citations from both brains.
