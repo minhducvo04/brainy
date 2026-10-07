@@ -1,0 +1,79 @@
+[
+  {
+    "id": "northwind-labs/platform#42",
+    "number": 42,
+    "kind": "pull_request",
+    "title": "Migrate orders service from MySQL to PostgreSQL",
+    "body": "Moves the orders service to PostgreSQL 16. Cutover is scheduled for October 14, 2026 during the low-traffic window. Rollout is in three steps: dual write, backfill, cutover. Reviewed by alice.",
+    "author": "carol",
+    "url": "https://github.com/northwind-labs/platform/pull/42",
+    "created_at": "2026-09-22T17:00:00Z",
+    "repo": "northwind-labs/platform"
+  },
+  {
+    "id": "northwind-labs/platform#44",
+    "number": 44,
+    "kind": "issue",
+    "title": "Postgres migration: define rollback plan",
+    "body": "Open question from the migration review: we have no tested rollback plan if the October 14 cutover fails. Needs an owner and a rehearsal before cutover.",
+    "author": "alice",
+    "url": "https://github.com/northwind-labs/platform/issues/44",
+    "created_at": "2026-09-25T17:00:00Z",
+    "repo": "northwind-labs/platform"
+  },
+  {
+    "id": "northwind-labs/platform#51",
+    "number": 51,
+    "kind": "pull_request",
+    "title": "Add token bucket rate limiter backed by Redis",
+    "body": "Adds a per-API-key token bucket limiter in Redis. Default limit is 100 requests per minute with a burst of 20. Replaces the in-process counter. Closes #49.",
+    "author": "dave",
+    "url": "https://github.com/northwind-labs/platform/pull/51",
+    "created_at": "2026-09-29T17:00:00Z",
+    "repo": "northwind-labs/platform"
+  },
+  {
+    "id": "northwind-labs/platform#58",
+    "number": 58,
+    "kind": "issue",
+    "title": "Change on-call rotation from daily to weekly",
+    "body": "Proposal: move the on-call rotation from daily to weekly handoffs, effective November 2, 2026. Handoff happens Monday 10:00 PT. Schedule lives in the pager tool.",
+    "author": "erin",
+    "url": "https://github.com/northwind-labs/platform/issues/58",
+    "created_at": "2026-10-01T17:00:00Z",
+    "repo": "northwind-labs/platform"
+  },
+  {
+    "id": "northwind-labs/platform#63",
+    "number": 63,
+    "kind": "pull_request",
+    "title": "Deprecate v1 REST API",
+    "body": "Marks every /v1 endpoint deprecated with a Sunset header. The v1 API shuts down on December 1, 2026. Customers move to v2 using the migration guide in docs/v2-migration.md.",
+    "author": "alice",
+    "url": "https://github.com/northwind-labs/platform/pull/63",
+    "created_at": "2026-10-02T17:00:00Z",
+    "repo": "northwind-labs/platform"
+  },
+  {
+    "id": "northwind-labs/platform#66",
+    "number": 66,
+    "kind": "issue",
+    "title": "Docs: link v2 migration guide from the developer portal",
+    "body": "Add a banner on the developer portal pointing v1 users to docs/v2-migration.md.",
+    "author": "dave",
+    "url": "https://github.com/northwind-labs/platform/issues/66",
+    "created_at": "2026-10-03T17:00:00Z",
+    "repo": "northwind-labs/platform"
+  },
+  {
+    "id": "northwind-labs/platform#70",
+    "number": 70,
+    "kind": "pull_request",
+    "title": "Add dashboards for orders p99 latency",
+    "body": "Grafana dashboards for orders p99 latency, used to compare MySQL and PostgreSQL during dual write.",
+    "author": "carol",
+    "url": "https://github.com/northwind-labs/platform/pull/70",
+    "created_at": "2026-10-04T17:00:00Z",
+    "repo": "northwind-labs/platform"
+  }
+]

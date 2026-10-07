@@ -1,0 +1,135 @@
+[
+  {
+    "channel": "general",
+    "user": "alice",
+    "ts": "1790006400.000001",
+    "text": "Welcome Bob to Northwind Labs! Bob, I am the engineering lead. Post questions here in #general and I will route them.",
+    "thread_ts": null
+  },
+  {
+    "channel": "general",
+    "user": "bob",
+    "ts": "1790006700.000002",
+    "text": "Thanks Alice, excited to be here. Where do I start?",
+    "thread_ts": "1790006400.000001"
+  },
+  {
+    "channel": "general",
+    "user": "alice",
+    "ts": "1790007000.000003",
+    "text": "Read the onboarding wiki first, then pair with Dave on your first ticket.",
+    "thread_ts": "1790006400.000001"
+  },
+  {
+    "channel": "general",
+    "user": "erin",
+    "ts": "1790877600.000001",
+    "text": "Heads up: the on-call rotation is changing. New schedule starts November 2 and handoffs become weekly instead of daily. Details to follow.",
+    "thread_ts": null
+  },
+  {
+    "channel": "general",
+    "user": "dave",
+    "ts": "1790878200.000001",
+    "text": "Lunch order for Friday goes out at 11:30, add your name to the sheet.",
+    "thread_ts": null
+  },
+  {
+    "channel": "general",
+    "user": "carol",
+    "ts": "1791054000.000001",
+    "text": "Reminder that some services will see maintenance windows this month. Watch #general for notices.",
+    "thread_ts": null
+  },
+  {
+    "channel": "eng",
+    "user": "carol",
+    "ts": "1790100000.000001",
+    "text": "Why we picked PostgreSQL for orders: we need JSONB for order metadata and row-level locking for inventory holds. MySQL replication lag kept hurting us.",
+    "thread_ts": null
+  },
+  {
+    "channel": "eng",
+    "user": "alice",
+    "ts": "1790100300.000002",
+    "text": "Agreed. Carol, you own the migration end to end. PR #42 has the plan.",
+    "thread_ts": "1790100000.000001"
+  },
+  {
+    "channel": "eng",
+    "user": "carol",
+    "ts": "1790100600.000003",
+    "text": "Confirmed, I own it. Cutover is October 14 in the low-traffic window.",
+    "thread_ts": "1790100000.000001"
+  },
+  {
+    "channel": "eng",
+    "user": "alice",
+    "ts": "1790366400.000001",
+    "text": "Open item: we still have no rollback plan for the Postgres cutover. Issue #44. Someone needs to rehearse it before October 14.",
+    "thread_ts": null
+  },
+  {
+    "channel": "eng",
+    "user": "carol",
+    "ts": "1790367000.000002",
+    "text": "I will draft the rollback plan this week and rehearse on staging.",
+    "thread_ts": "1790366400.000001"
+  },
+  {
+    "channel": "eng",
+    "user": "dave",
+    "ts": "1790701200.000001",
+    "text": "Rate limiter decision: token bucket in Redis, not a sliding window. Mobile clients send bursts and token bucket tolerates them. 100 requests per minute, burst of 20. PR #51.",
+    "thread_ts": null
+  },
+  {
+    "channel": "eng",
+    "user": "alice",
+    "ts": "1790701800.000002",
+    "text": "Fine by me. Dave owns the limiter, including the Redis cluster sizing.",
+    "thread_ts": "1790701200.000001"
+  },
+  {
+    "channel": "eng",
+    "user": "dave",
+    "ts": "1790702100.000003",
+    "text": "Yes, I own it and the Redis setup.",
+    "thread_ts": "1790701200.000001"
+  },
+  {
+    "channel": "eng",
+    "user": "erin",
+    "ts": "1790875800.000001",
+    "text": "Why weekly on-call: daily handoffs caused pager fatigue and lost context between shifts. I own the new rotation and will publish the schedule. Issue #58.",
+    "thread_ts": null
+  },
+  {
+    "channel": "eng",
+    "user": "carol",
+    "ts": "1790876400.000002",
+    "text": "Weekly is better for me. Starts November 2, handoff Monday 10:00 PT.",
+    "thread_ts": "1790875800.000001"
+  },
+  {
+    "channel": "eng",
+    "user": "alice",
+    "ts": "1790974800.000001",
+    "text": "I am deprecating the v1 API. Sunset is December 1. I am accountable for customer comms, PR #63. Reason: v1 has no pagination limits and we cannot keep patching it.",
+    "thread_ts": null
+  },
+  {
+    "channel": "eng",
+    "user": "dave",
+    "ts": "1790975400.000002",
+    "text": "I will add the portal banner for the v2 migration guide.",
+    "thread_ts": "1790974800.000001"
+  },
+  {
+    "channel": "eng",
+    "user": "erin",
+    "ts": "1791129600.000001",
+    "text": "p99 dashboards are live, thanks Carol.",
+    "thread_ts": null
+  }
+]
