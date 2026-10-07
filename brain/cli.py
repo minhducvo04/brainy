@@ -5,6 +5,8 @@
   python -m brain.cli share --owner alice --to bob
   python -m brain.cli forget --user alice
   python -m brain.cli eval --scenarios scenarios/scenarios.json --out runs/baseline.json
+  python -m brain.cli pull --user alice@acme.com --slack-channels eng,general --github-repo owner/name --save
+  python -m brain.cli post --user alice@acme.com --to "#eng" --text "brief" --dry-run
 
 Scenario file: a list (or {"scenarios": [...]}) of {id, question, as_user|user}.
 eval writes [{id, answer, sources}] for the scorer.
@@ -77,6 +79,28 @@ async def cmd_eval(args) -> None:
     print(f"wrote {len(rows)} rows to {out}")
 
 
+async def cmd_pull(args) -> None:
+    from brain.pull import pull
+
+    channels = [c.strip() for c in args.slack_channels.split(",") if c.strip()] if args.slack_channels else None
+    result = pull(
+        args.user,
+        slack_channels=channels,
+        github_repo=args.github_repo,
+        slack_connection=args.slack_connection,
+        github_connection=args.github_connection,
+        limit=args.limit,
+        save_dir=args.save,
+    )
+    print(json.dumps({source: len(items) for source, items in result.items()}))
+
+
+async def cmd_post(args) -> None:
+    from brain.act import post_brief
+
+    post_brief(args.user, args.to, args.text, connection=args.slack_connection, yes=args.yes, dry_run=args.dry_run)
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="brain", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -108,6 +132,29 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--scenarios", required=True)
     s.add_argument("--out", required=True)
     s.set_defaults(fn=cmd_eval)
+
+    s = sub.add_parser("pull", help="pull Slack + GitHub as one user through Scalekit")
+    s.add_argument("--user", required=True, help="Scalekit identifier, e.g. alice@acme.com")
+    s.add_argument("--slack-channels", help="comma-separated channels (#name or id)")
+    s.add_argument("--github-repo", help="owner/name")
+    s.add_argument("--slack-connection", default="slack")
+    s.add_argument("--github-connection", default="github")
+    s.add_argument("--limit", type=int, default=200, help="max items per channel or list")
+    s.add_argument(
+        "--save", nargs="?", const="sample_data/recorded", default=None,
+        help="write <dir>/<user>-<source>.json for ingest (default dir: sample_data/recorded)",
+    )
+    s.set_defaults(fn=cmd_pull)
+
+    s = sub.add_parser("post", help="post a brief to Slack as the user through Scalekit")
+    s.add_argument("--user", required=True)
+    s.add_argument("--to", required=True, help="channel (#name or id) or user id for a DM")
+    s.add_argument("--text", required=True)
+    s.add_argument("--slack-connection", default="slack")
+    g = s.add_mutually_exclusive_group()
+    g.add_argument("--dry-run", action="store_true", help="print what would be sent, send nothing")
+    g.add_argument("--yes", action="store_true", help="skip the confirmation prompt")
+    s.set_defaults(fn=cmd_post)
     return p
 
 
