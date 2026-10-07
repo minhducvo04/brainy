@@ -1,0 +1,78 @@
+[
+  {
+    "id": "v01",
+    "as_user": "alice",
+    "question": "For the orders PostgreSQL migration, what technical problems drove the decision, who owns delivery end to end, and what is the cutover date?",
+    "must_mention": ["JSONB", "Carol", "October 14"],
+    "expected_sources": ["source:github", "source:slack"]
+  },
+  {
+    "id": "v02",
+    "as_user": "alice",
+    "question": "What rate limiting approach did we ship, why was it chosen over a sliding window, who owns it including Redis, and what is the default per-minute limit?",
+    "must_mention": ["token bucket", "Dave", "100 requests"],
+    "expected_sources": ["source:github", "source:slack"]
+  },
+  {
+    "id": "v03",
+    "as_user": "alice",
+    "question": "Why are we moving on-call from daily to weekly, who owns the new rotation, and when does it take effect including handoff time?",
+    "must_mention": ["pager fatigue", "Erin", "November 2"],
+    "expected_sources": ["source:github", "source:slack"]
+  },
+  {
+    "id": "v04",
+    "as_user": "alice",
+    "question": "When does the v1 REST API shut down, who is accountable for customer impact, and what engineering reason forced deprecation?",
+    "must_mention": ["December 1", "Alice", "pagination"],
+    "expected_sources": ["source:github", "source:slack"]
+  },
+  {
+    "id": "v05",
+    "as_user": "alice",
+    "question": "What migration risk is still unresolved in GitHub before the October 14 cutover, and which issue tracks it?",
+    "must_mention": ["rollback plan", "44", "open"],
+    "expected_sources": ["source:github", "source:slack"]
+  },
+  {
+    "id": "v06",
+    "as_user": "alice",
+    "question": "Give me both platform dates we are working toward: the Postgres orders cutover and the v1 API sunset, with who owns or is accountable for each.",
+    "must_mention": ["October 14", "December 1", "Carol"],
+    "expected_sources": ["source:github", "source:slack"]
+  },
+  {
+    "id": "v07",
+    "as_user": "bob",
+    "question": "Carol reminded us in #general about maintenance windows this month. When is the PostgreSQL cutover for orders and who owns that migration?",
+    "must_mention": [],
+    "must_not_mention": ["October 14", "Carol", "JSONB"],
+    "expected_sources": [],
+    "expect_refusal": true
+  },
+  {
+    "id": "v08",
+    "as_user": "bob",
+    "question": "Erin posted in #general that on-call is changing. Who owns the new rotation and what was the main reason we left daily handoffs?",
+    "must_mention": [],
+    "must_not_mention": ["Erin", "pager fatigue", "Issue #58"],
+    "expected_sources": [],
+    "expect_refusal": true
+  },
+  {
+    "id": "v09",
+    "as_user": "bob",
+    "question": "From what Erin shared in #general, when does the new on-call schedule start and how do handoffs change?",
+    "must_mention": ["November 2", "weekly"],
+    "must_not_mention": ["pager fatigue", "Monday 10:00"],
+    "expected_sources": ["source:slack"]
+  },
+  {
+    "id": "v10",
+    "as_user": "bob",
+    "question": "When does the weekly on-call rotation start, and on what date does the v1 API shut down?",
+    "must_mention": ["November 2", "weekly"],
+    "must_not_mention": ["December 1", "PR #63", "Sunset"],
+    "expected_sources": ["source:slack"]
+  }
+]
