@@ -2,15 +2,13 @@
 
 Default is a dry run (no network). ``--live`` asks y/N before each target group.
 Slack posts go through ``brain.act.post_brief`` (Scalekit, as ``--user``), top level,
-with the original author as a prefix ("carol: ..."). GitHub gets issues only, via
-``gh issue create``; PRs become issues titled "[PR #n] ...".
+with the original author as a prefix ("carol: ..."). GitHub gets issues only, through Scalekit as the same user; PRs become issues titled "[PR #n] ...".
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 from collections import OrderedDict
 from pathlib import Path
 
@@ -71,10 +69,20 @@ def main() -> int:
     print(f"\n== GitHub {args.repo}: {len(issues)} issues ==")
     for i in issues:
         print(f"  TITLE: {i['title']}\n  BODY: {i['body']}\n")
-    if live and confirm(f"Create these {len(issues)} issues in {args.repo}?"):
+    if live and confirm(f"Create these {len(issues)} issues in {args.repo} as {args.user}?"):
+        from brain.pull import ensure_authorized, scalekit_actions
+
+        actions = scalekit_actions()
+        ensure_authorized(actions, "github", args.user)
+        owner, repo = args.repo.split("/", 1)
         for i in issues:
-            subprocess.run(["gh", "issue", "create", "--repo", args.repo,
-                            "--title", i["title"], "--body", i["body"]], check=True)
+            # Confirmed in https://docs.scalekit.com/agentkit/connectors/github/
+            # Tool and response have not been seen live.
+            actions.execute_tool(
+                tool_name="github_issue_create",
+                tool_input={"owner": owner, "repo": repo, "title": i["title"], "body": i["body"]},
+                connection_name="github", identifier=args.user,
+            )
 
     counts = ", ".join(f"#{c}={len(m)}" for c, m in groups.items())
     print(f"COUNTS: slack {counts}; total slack={sum(map(len, groups.values()))}; github issues={len(issues)}"
