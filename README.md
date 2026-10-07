@@ -54,4 +54,4 @@ Live data instead of samples (needs Scalekit connections named `slack` and `gith
 | `eval/score.py`, `scenarios/` | independent scorer (fact match, sources, leak = 0) and 12 scenarios |
 | `sample_data/` | fictional Northwind Labs pulls so judges can run without our accounts |
 
-Team workflow: [CONTRIBUTING.md](CONTRIBUTING.md). Live status: [STATUS.md](STATUS.md). Event rules: [docs/event.md](docs/event.md).
+Team workflow: [CONTRIBUTING.md](CONTRIBUTING.md). New teammate or agent: [docs/TEAMMATE-SETUP.md](docs/TEAMMATE-SETUP.md). Live status: [STATUS.md](STATUS.md). Event rules: [docs/event.md](docs/event.md).

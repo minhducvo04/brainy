@@ -17,10 +17,12 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 
 SLACK_HISTORY_TOOL = "slack_fetch_conversation_history"  # inputs: channel, limit, cursor
 SLACK_REPLIES_TOOL = "slack_get_conversation_replies"  # inputs: channel, ts, limit, cursor
+SLACK_USER_TOOL = "slack_get_user_info"  # inputs: user (Slack users.info); name not seen live
 GITHUB_ISSUES_TOOL = "github_issues_list"  # inputs: owner, repo, state, per_page, page
 GITHUB_PULLS_TOOL = "github_pull_requests_list"  # inputs: owner, repo, state, per_page, page
 
@@ -97,12 +99,56 @@ def normalize_slack(raw_messages: list[dict], channel: str) -> list[dict]:
     return sorted(seen.values(), key=lambda m: float(m["ts"] or 0))
 
 
+_MENTION = re.compile(r"<@([UW][A-Z0-9]+)(?:\|[^>]*)?>")
+_USER_ID = re.compile(r"^[UW][A-Z0-9]{2,}$")
+
+
+def _display_name(data) -> str:
+    """Pull a name out of a users.info result (profile display name, then real name, then name)."""
+    if isinstance(data, dict):
+        user = data.get("user") if isinstance(data.get("user"), dict) else data
+        for source in (user.get("profile") or {}, user):
+            if not isinstance(source, dict):
+                continue
+            for key in ("display_name", "real_name", "name"):
+                if str(source.get(key) or "").strip():
+                    return str(source[key]).strip()
+        for key in ("data", "result", "response", "body"):
+            if isinstance(data.get(key), dict):
+                found = _display_name(data[key])
+                if found:
+                    return found
+    return ""
+
+
+def resolve_slack_names(actions, connection: str, user: str, msgs: list[dict], cache: dict[str, str]) -> None:
+    """Replace Slack user ids (author field and <@U...> mentions) with names, in place.
+    ``cache`` maps id -> name for one pull; a failed lookup keeps the raw id."""
+
+    def name_for(uid: str) -> str:
+        if uid not in cache:
+            try:
+                result = actions.execute_tool(
+                    tool_name=SLACK_USER_TOOL, tool_input={"user": uid}, connection_name=connection, identifier=user
+                )
+                cache[uid] = _display_name(result.data) or uid
+            except Exception:
+                cache[uid] = uid
+        return cache[uid]
+
+    for msg in msgs:
+        if _USER_ID.match(msg["user"]):
+            msg["user"] = name_for(msg["user"])
+        msg["text"] = _MENTION.sub(lambda m: "@" + name_for(m.group(1)), msg["text"])
+
+
 def _has_replies(raw: dict) -> bool:
     return int(raw.get("reply_count") or 0) > 0 or (raw.get("thread_ts") and raw.get("thread_ts") == raw.get("ts"))
 
 
 def pull_slack(actions, connection: str, user: str, channels: list[str], limit: int = 200, threads: bool = True):
     out: list[dict] = []
+    names: dict[str, str] = {}
     for channel in channels:
         raw: list[dict] = []
         cursor = ""
@@ -127,6 +173,7 @@ def pull_slack(actions, connection: str, user: str, channels: list[str], limit: 
                 )
                 raw += _items(result.data, "messages")
         msgs = normalize_slack(raw, channel)
+        resolve_slack_names(actions, connection, user, msgs, names)
         print(f"slack {channel}: {len(msgs)} messages")
         out += msgs
     return out
