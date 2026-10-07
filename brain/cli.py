@@ -36,7 +36,8 @@ async def cmd_ingest(args) -> None:
     from brain.records import build_records
 
     channels = [c.strip() for c in args.channels.split(",")] if args.channels else None
-    records = build_records(_load_json(args.github), _load_json(args.slack), memory.email_for(args.user), channels)
+    records = build_records(_load_json(args.github), _load_json(args.slack), memory.email_for(args.user), channels,
+                            gmail_items=_load_json(args.gmail), notion_items=_load_json(args.notion))
     print(f"{len(records)} documents for {args.user}")
     print(json.dumps(await memory.remember(records, args.user)))
 
@@ -91,6 +92,10 @@ async def cmd_pull(args) -> None:
         github_connection=args.github_connection,
         limit=args.limit,
         save_dir=args.save,
+        gmail_query=args.gmail_query,
+        notion_query=args.notion_query,
+        gmail_connection=args.gmail_connection,
+        notion_connection=args.notion_connection,
     )
     print(json.dumps({source: len(items) for source, items in result.items()}))
 
@@ -109,6 +114,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--user", required=True)
     s.add_argument("--github", help="JSON list of GitHub PRs/issues")
     s.add_argument("--slack", help="JSON list of Slack messages")
+    s.add_argument("--gmail", help="JSON list of pulled Gmail emails")
+    s.add_argument("--notion", help="JSON list of pulled Notion pages")
     s.add_argument("--channels", help="comma-separated Slack channels to keep (default: all)")
     s.set_defaults(fn=cmd_ingest)
 
@@ -133,12 +140,16 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--out", required=True)
     s.set_defaults(fn=cmd_eval)
 
-    s = sub.add_parser("pull", help="pull Slack + GitHub as one user through Scalekit")
+    s = sub.add_parser("pull", help="pull Slack, GitHub, Gmail and Notion as one user through Scalekit")
     s.add_argument("--user", required=True, help="Scalekit identifier, e.g. alice@acme.com")
     s.add_argument("--slack-channels", help="comma-separated channels (#name or id)")
     s.add_argument("--github-repo", help="owner/name")
+    s.add_argument("--gmail-query", help="Gmail search, e.g. subject:Demo")
+    s.add_argument("--notion-query", help="Notion page title search")
     s.add_argument("--slack-connection", default="slack")
     s.add_argument("--github-connection", default="github")
+    s.add_argument("--gmail-connection", default="gmail")
+    s.add_argument("--notion-connection", default="notion")
     s.add_argument("--limit", type=int, default=200, help="max items per channel or list")
     s.add_argument(
         "--save", nargs="?", const="sample_data/recorded", default=None,
