@@ -21,13 +21,22 @@ Rules:
 - Never guess, never use outside knowledge, keep it under 120 words."""
 
 
-def respan_trace(fn):
-    """TODO(respan-tracing): the event README names the respan-ai SDK (`Respan()` at
-    startup plus a decorator on the request handler) but not the decorator's exact
-    name, and the package is not installed. Wire it here once confirmed. Every LLM
-    call already goes through the Respan gateway, which logs model, tokens, cost and
-    latency."""
-    return fn
+def _init_respan():
+    """respan-ai SDK: `Respan()` once at startup, `@workflow` on the request handler.
+    Falls back to a no-op when RESPAN_API_KEY is unset or the SDK is missing, so the
+    keyless dry run keeps working. (`brain.memory` has already run load_dotenv.)"""
+    if not os.getenv("RESPAN_API_KEY"):
+        return lambda fn: fn
+    try:
+        from respan import Respan, workflow
+
+        Respan(app_name="brainy")
+        return workflow(name="answer")
+    except Exception:
+        return lambda fn: fn
+
+
+respan_trace = _init_respan()
 
 
 def _client() -> AsyncOpenAI:
