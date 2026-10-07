@@ -1,0 +1,5 @@
+cognee==1.6.3
+scalekit-sdk-python==2.20.0
+python-dotenv==1.2.4
+openai==2.54.0
+pytest
