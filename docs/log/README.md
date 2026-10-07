@@ -6,3 +6,4 @@ One dated line per decision or merge, newest last.
 - 15:50 Pushed main e62941e to github.com/minhducvo04/brainy (Duc pushed; emails rewritten to no-reply, files identical to backup).
 - 16:13 Package 1 verified with real calls: alice 17 docs, bob 4, bob refused, share, bob answered with citations from both brains.
 - 16:25 Baseline eval 12/12 mean 1.000 after re-ingest under text-embedding-3-large; ceiling, so package 10 (harder held-out set) added for Cursor.
+- 16:28 Merged package 5 seed script and package 7 SUBMISSION draft (both reviewed by Codex Astra; tests 6 pass; dry run 19/7).
