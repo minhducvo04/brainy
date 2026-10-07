@@ -18,6 +18,8 @@ uv venv --python 3.12 && uv pip install -r requirements.txt
 cp .env.example .env          # fill in RESPAN_API_KEY (+ LLM/EMBEDDING keys) and the three SCALEKIT_* values
 ```
 
+On a Mac with Apple Silicon, also run the Ladybug fix below.
+
 Run on the recorded sample data (no Slack or GitHub account needed):
 
 ```bash
@@ -43,6 +45,24 @@ Live data instead of samples (needs Scalekit connections named `slack` and `gith
 .venv/bin/python -m brain.cli pull --user alice@acme.com --slack-channels eng,general --github-repo owner/name --save
 .venv/bin/python -m brain.cli post --user alice@acme.com --to "#eng" --text "brief" --dry-run
 ```
+
+## macOS (Apple Silicon): Ladybug fix
+
+On macOS arm64, cognee 1.6.3 uses ladybug 0.19.0 as its graph database. The ladybug wheel does not include its C library, so the first `cognee.remember` fails with `MigrationError: Relational DB Migrations failed`. The log in `~/.cognee/logs` says `Could not find lbug C API shared library`. The library also needs Homebrew OpenSSL 3.
+
+Run this from the repo root after `uv pip install -r requirements.txt`:
+
+```bash
+brew install openssl@3
+LIB=.venv/lib/python3.12/site-packages/.cache/lbug-prebuilt/lib
+mkdir -p "$LIB"
+curl -sSL https://github.com/LadybugDB/ladybug/releases/download/v0.19.0/liblbug-osx-arm64.tar.gz | tar -xz -C "$LIB"
+.venv/bin/python -c "import ladybug._lbug_capi"   # no error = fixed
+```
+
+Notes:
+- Recreating `.venv` removes the fix. Run it again.
+- cognee stores its data inside `.venv` (`site-packages/cognee/.cognee_system`). Recreating `.venv` also wipes ingested data. Re-run the ingest commands.
 
 ## Layout
 
