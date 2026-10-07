@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.worktrees/
+.cursor-ref/
+node_modules/
+.venv/
+__pycache__/
+.DS_Store
+dist/
+build/
+*.log
