@@ -1,0 +1,8 @@
+[
+  {
+    "id": "northwind-search-decision-record",
+    "title": "Northwind Labs: Search decision record",
+    "url": "https://northwind.example/notion/search-decision-record",
+    "body": "Status: Decided 2026-10-03\nOwner: Dave\nAccountable: Alice\n\nDecision\nTypesense self-hosted replacing the Algolia trial\n\nWhy\nCost/data stays in our cloud/typo tolerance\n\nRollout\nOctober 28 behind search_v2 with Erin adding alerts on query latency above 200 ms\n\nOpen questions\nIndex sharding past 5M documents, who pays for the extra node"
+  }
+]
