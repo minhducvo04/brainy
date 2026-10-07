@@ -20,8 +20,8 @@ Last update: 2026-10-07 15:35 PT. Deadline 6:00 PM PT; feature freeze 5:15 PM. N
 | 7 | Demo script rehearsal + `SUBMISSION.md` | `SUBMISSION.md` | 3-minute run end to end | | open, at 5:15 |
 
 ## Needs Duc
-- [ ] Commit email: switch to the GitHub no-reply address before the first public push (rewrite the local, unpushed commits).
-- [ ] Create the GitHub repo `brainy` (website; the CLI token cannot create repos), then `git remote add origin ... && git push -u origin main`.
+- [x] Commit email: rewritten to the GitHub no-reply address (backup branch `backup/main-before-email`).
+- [x] Repo https://github.com/minhducvo04/brainy (public); main pushed at e62941e.
 - [ ] `.env`: Respan key and the three Scalekit values.
 - [ ] Scalekit AgentKit connections `slack` and `github`.
 - [ ] Yes before the submission PR to the event repo (public).
