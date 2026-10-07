@@ -1,0 +1,9 @@
+[
+  {
+    "id": "northwind-search-decision-20261003",
+    "subject": "[Northwind demo] Decision: Typesense for in-app search",
+    "from": "Dave <dave@northwind.example>",
+    "date": "2026-10-03T10:00:00-07:00",
+    "body": "To: Alice <alice@northwind.example>\n\nAlice,\n\nWe are going with Typesense over Algolia for in-app search. It is about 70% cheaper at our volume, we can self-host it next to Postgres, and typo tolerance was equal in our tests.\n\nI own rollout on October 28 behind the search_v2 flag. The open question is index sharding past 5 million documents. The full record is in Notion, \"Search decision record\" (Northwind Labs: Search decision record).\n\nDave"
+  }
+]
