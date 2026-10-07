@@ -1,4 +1,6 @@
 import base64
+
+import pytest
 from types import SimpleNamespace
 
 from brain import pull
@@ -65,6 +67,7 @@ def test_cli_options_and_citation_tags():
     args = build_parser().parse_args(['pull', '--user', 'alice', '--gmail-query', 'subject:Demo', '--notion-query', 'Demo'])
     assert args.gmail_query == 'subject:Demo'
     assert args.notion_query == 'Demo'
+    assert (args.gmail_connection, args.notion_connection) == ('gmail', 'notion')
     args = build_parser().parse_args(['ingest', '--user', 'alice', '--gmail', 'email.json', '--notion', 'page.json'])
     assert (args.gmail, args.notion) == ('email.json', 'page.json')
     assert tags_in_text('[gmail | Demo | Dev] body') == ['source:gmail']
@@ -86,9 +89,11 @@ def test_pull_save_and_ingest_wiring(tmp_path, monkeypatch):
     monkeypatch.setattr(pull, 'ensure_authorized', lambda a, c, u: authorized.append((c, u)))
     parser = build_parser()
     args = parser.parse_args(['pull', '--user', 'alice', '--gmail-query', 'subject:Demo',
-                              '--notion-query', 'Demo', '--save', str(tmp_path)])
+                              '--notion-query', 'Demo', '--save', str(tmp_path),
+                              '--gmail-connection', 'work-mail', '--notion-connection', 'work-pages'])
     asyncio.run(cmd_pull(args))
-    assert authorized == [('gmail', 'alice'), ('notion', 'alice')]
+    assert authorized == [('work-mail', 'alice'), ('work-pages', 'alice')]
+    assert [c['connection_name'] for c in actions.calls] == ['work-mail', 'work-pages', 'work-pages']
     captured = []
 
     async def remember(records, user):
@@ -124,3 +129,40 @@ def test_limits_deduplication_and_repeated_cursor():
     ])
     assert len(pull.pull_notion(actions, 'notion', 'alice', '', 1)) == 1
     assert len(actions.calls) == 2
+
+
+@pytest.mark.parametrize("failed_source", ["slack", "github", "gmail", "notion"])
+@pytest.mark.parametrize("failure_stage", ["authorize", "pull"])
+def test_source_failure_preserves_other_saved_results(tmp_path, monkeypatch, capsys,
+                                                       failed_source, failure_stage):
+    import json
+
+    sources = ["slack", "github", "gmail", "notion"]
+    actions = object()
+    monkeypatch.setattr(pull, "scalekit_actions", lambda: actions)
+
+    def authorize(a, connection, user):
+        assert a is actions and user == "alice"
+        if connection == failed_source and failure_stage == "authorize":
+            raise RuntimeError("private error details")
+
+    def fetch(a, connection, user, query, limit):
+        assert a is actions and user == "alice"
+        if connection == failed_source and failure_stage == "pull":
+            raise RuntimeError("private error details")
+        return [{"id": connection + "-1"}]
+
+    monkeypatch.setattr(pull, "ensure_authorized", authorize)
+    for source in sources:
+        monkeypatch.setattr(pull, "pull_" + source, fetch)
+    result = pull.pull("alice", slack_channels=["eng"], github_repo="demo/repo",
+                       gmail_query="subject:Demo", notion_query="Demo", save_dir=str(tmp_path))
+    assert set(result) == set(sources) - {failed_source}
+    for source in sources:
+        path = tmp_path / f"alice-{source}.json"
+        assert path.exists() == (source != failed_source)
+        if path.exists():
+            assert json.loads(path.read_text()) == [{"id": source + "-1"}]
+    output = capsys.readouterr().out
+    assert f"{failed_source}: failed (RuntimeError)" in output
+    assert "private error details" not in output

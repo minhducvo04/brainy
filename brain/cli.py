@@ -94,6 +94,8 @@ async def cmd_pull(args) -> None:
         save_dir=args.save,
         gmail_query=args.gmail_query,
         notion_query=args.notion_query,
+        gmail_connection=args.gmail_connection,
+        notion_connection=args.notion_connection,
     )
     print(json.dumps({source: len(items) for source, items in result.items()}))
 
@@ -146,6 +148,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--notion-query", help="Notion page title search")
     s.add_argument("--slack-connection", default="slack")
     s.add_argument("--github-connection", default="github")
+    s.add_argument("--gmail-connection", default="gmail")
+    s.add_argument("--notion-connection", default="notion")
     s.add_argument("--limit", type=int, default=200, help="max items per channel or list")
     s.add_argument(
         "--save", nargs="?", const="sample_data/recorded", default=None,

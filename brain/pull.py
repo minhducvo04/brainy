@@ -412,23 +412,38 @@ def pull(
     save_dir: str | None = None,
     gmail_query: str | None = None,
     notion_query: str | None = None,
+    gmail_connection: str = "gmail",
+    notion_connection: str = "notion",
 ) -> dict:
     """Pull selected sources as ``user``; returns lists keyed by source, saving
-    ``<save_dir>/<user>-<source>.json`` when ``save_dir`` is given."""
+    ``<save_dir>/<user>-<source>.json`` when ``save_dir`` is given.
+    A source authorization or pull failure is reported without discarding other sources."""
     actions = scalekit_actions()
     result: dict[str, list] = {}
     if slack_channels:
-        ensure_authorized(actions, slack_connection, user)
-        result["slack"] = pull_slack(actions, slack_connection, user, slack_channels, limit)
+        try:
+            ensure_authorized(actions, slack_connection, user)
+            result["slack"] = pull_slack(actions, slack_connection, user, slack_channels, limit)
+        except Exception as exc:
+            print(f"slack: failed ({type(exc).__name__})")
     if github_repo:
-        ensure_authorized(actions, github_connection, user)
-        result["github"] = pull_github(actions, github_connection, user, github_repo, limit)
+        try:
+            ensure_authorized(actions, github_connection, user)
+            result["github"] = pull_github(actions, github_connection, user, github_repo, limit)
+        except Exception as exc:
+            print(f"github: failed ({type(exc).__name__})")
     if gmail_query is not None:
-        ensure_authorized(actions, "gmail", user)
-        result["gmail"] = pull_gmail(actions, "gmail", user, gmail_query, limit)
+        try:
+            ensure_authorized(actions, gmail_connection, user)
+            result["gmail"] = pull_gmail(actions, gmail_connection, user, gmail_query, limit)
+        except Exception as exc:
+            print(f"gmail: failed ({type(exc).__name__})")
     if notion_query is not None:
-        ensure_authorized(actions, "notion", user)
-        result["notion"] = pull_notion(actions, "notion", user, notion_query, limit)
+        try:
+            ensure_authorized(actions, notion_connection, user)
+            result["notion"] = pull_notion(actions, notion_connection, user, notion_query, limit)
+        except Exception as exc:
+            print(f"notion: failed ({type(exc).__name__})")
     if save_dir:
         for source, items in result.items():
             save(items, Path(save_dir) / f"{user}-{source}.json")
