@@ -1,158 +1,47 @@
-# Team Submission
+# Brainy — submission draft
 
-## Team
+**Team:** Duc Vo (Brainy). **Repo:** https://github.com/minhducvo04/brainy
 
-- Team name:
-- Participants:
-- Company Brain / project name:
+**One-line pitch:** Ask why the team chose something, who owns it, and what is still open; get a cited answer from GitHub and Slack, scoped to what each person may see.
 
-## Company Brain Overview
+## Problem
 
-One-paragraph description of what your Company Brain does, which team
-workflow it solves, and who the users are.
+Decisions and rationale scatter across PRs, issues, and Slack threads. People outside a channel or repo cannot reconstruct the story without manual search or repeated questions.
 
-- Data sources connected through Scalekit (≥ 2 apps):
-- Primary use case / team workflow:
-- Users in the demo and how their access differs:
-- What makes it stand out:
+## What it does
 
-## The Three Layers
+**Scalekit (pull and act):** Ingest or live-pull Slack and GitHub per user. Alice uses both apps (eng channels plus repo); Bob uses Slack #general only. Posts back to Slack run as the acting user via Scalekit, not a shared bot token.
 
-### Pull — Scalekit
+**Cognee (remember):** Each user has their own dataset. Ingested items are remembered with `node_set` tags for source, channel, and owner. Recall powers answers with citations; missing access yields a plain refusal. Alice can share her dataset with Bob.
 
-- Connections created (`connection_name` → app):
-- Tools called (`gmail_fetch_mails`, `slack_fetch_conversation_history`,
-  `googledrive_export_file`, `github_file_contents_get`, ...):
-- How users are identified (`identifier` ↔ Cognee user):
-- Any write-back actions the agent takes (post, draft, open issue, push
-  branch/commit, open PR):
-- Code entry point:
+**Respan (gateway, trace, eval):** LLM calls go through the Respan gateway. Agent `ask` is set up for tracing. Twelve scenarios in `scenarios/scenarios.json` are scored by an independent Python scorer (required facts, required sources, zero score on leaks). Baseline and improved runs are wired; numeric scores are **TBD** until keys are in place and package 4 lands.
 
-### Remember — Cognee
+## 3-minute demo
 
-- What goes into the permanent graph (`cognee.remember(...)` without
-  `session_id`):
-- What stays in session memory (`session_id=...`), if anything:
-- `node_set` tags used for provenance (`source:*`, `channel:*`, `owner:*`):
-- Datasets and who owns / can read each:
-- Access control (`ENABLE_BACKEND_ACCESS_CONTROL`, shares granted):
-- Anything beyond defaults (custom graph model, ontology, `improve()`,
-  custom prompt, `query_type` choice):
-- Code entry point:
+1. Problem: archaeology across GitHub and Slack.
+2. Ingest sample data (or live pull) as Alice and Bob; note different doc counts per user.
+3. Alice asks: "Why did we switch to Postgres and who owns the migration?" Answer cites a PR and a thread.
+4. Bob asks the same: "I can't see that." Alice shares; Bob asks again and gets the answer.
+5. Agent posts a short brief to Alice's Slack through Scalekit (dry-run or live).
+6. Eval: baseline mean **TBD**, describe the tagging or prompt change, improved mean **TBD**; Respan trace links **TBD**.
 
-### Act + Evaluate — your agent(s) + Respan
+## How to run
 
-- Agent(s) and the task each performs:
-- LLM calls routed through the Respan gateway? (models used):
-- How the runs are traced (Respan SDK decorator / instrumentor):
-- Scenario file / Respan testset (path, number of scenarios):
-- Evaluator (LLM judge + model, Python check, human review):
-- Code entry point:
-
-## Evaluation Evidence
-
-Show that the brain does the job — and that it got better. Concrete numbers
-beat prose.
-
-### Baseline Run
-
-- Respan trace / eval run link:
-- Scenarios run:
-- Mean score:
-- Worst scenario and why it failed:
-
-```text
-question:
-expected:
-got:
-score:
-```
-
-### Improved Run
-
-- Respan trace / eval run link:
-- What changed in the brain or agent between runs (one or two sentences):
-- Mean score:
-
-```text
-Before:  mean = ___   (n = ___ scenarios)
-After:   mean = ___   (n = ___ scenarios)
-```
-
-## Access Story
-
-Two users, the same question, different results — then a grant.
-
-- User A (identifier, connections, datasets readable):
-- User B (identifier, connections, datasets readable):
-- Question asked by both:
-- Result for A:
-- Result for B before the share:
-- The grant (who shared what with whom, which permission):
-- Result for B after the share:
-
-## Architecture
-
-Short diagram or bullet list. The hackathon's core pattern is
-**Pull → Remember → Act → Evaluate** across the three layers; show how yours
-maps onto it and where user access is enforced.
-
-```text
-[ Scalekit connections, per user ]
-        |
-        | execute_tool(identifier=...)  -> documents / threads / issues
-        v
-[ Cognee — remember(node_set=[...], dataset_name=..., user=...) ]
-        |
-        | recall(question, user=...)   -> grounded context
-        v
-[ your agent — traced by Respan ]    -> answer / brief / action (via Scalekit)
-        |
-        v
-[ Respan evaluator over testset ]    -> scenarios -> scores -> before/after
-```
-
-## Reproduction
-
-Commands to reproduce your demo and your eval:
+From the README quick start: Python 3.12, `uv venv`, `uv pip install -r requirements.txt`, copy `.env.example` to `.env` (Respan key, LLM/embedding keys, three Scalekit values). Judges without our accounts use `sample_data/`:
 
 ```bash
-# paste commands here
+.venv/bin/python -m brain.cli ingest --user alice --github sample_data/github.json --slack sample_data/slack.json --channels eng,general
+.venv/bin/python -m brain.cli ingest --user bob --slack sample_data/slack.json --channels general
+.venv/bin/python -m brain.cli ask --user alice "Why did we switch to Postgres and who owns the migration?"
+.venv/bin/python -m brain.cli ask --user bob "Why did we switch to Postgres and who owns the migration?"
+.venv/bin/python -m brain.cli share --owner alice --to bob
+.venv/bin/python -m brain.cli ask --user bob "Why did we switch to Postgres and who owns the migration?"
 ```
 
-Environment variables required:
+Eval: `brain.cli eval` then `python -m eval.score` (see README). Live pull: `brain.cli pull` with Scalekit connections `slack` and `github`.
 
-```text
-RESPAN_API_KEY                # Respan gateway credits, provided at kickoff
-LLM_PROVIDER / LLM_ENDPOINT / LLM_API_KEY / LLM_MODEL      # cognee -> Respan gateway
-EMBEDDING_PROVIDER / EMBEDDING_ENDPOINT / EMBEDDING_API_KEY / EMBEDDING_MODEL / EMBEDDING_DIMENSIONS
-SCALEKIT_ENVIRONMENT_URL
-SCALEKIT_CLIENT_ID
-SCALEKIT_CLIENT_SECRET
-# add anything else your brain needs
-```
+## What is verified
 
-Judges without your SaaS accounts: how do they run it? (sample data folder,
-recorded pull, seeded dataset, ...)
+**Verified without API keys:** CLI ingest on sample JSON; Alice 17 docs, Bob 4; Bob refused before share in the keyless path; eval writes 12 rows and the scorer reads them; Respan tracing code merged (live trace not checked).
 
-## Demo
-
-- Live demo link (Loom, YouTube, etc.) or local instructions:
-- 3-minute pitch outline:
-
-```text
-1. Problem / team workflow
-2. Pull demo (Scalekit, two sources, as user A)
-3. Brain demo (Cognee graph + a cross-source answer)
-4. Access demo (user B asks, gets less; grant; asks again)
-5. Agent task demo (traced run, action taken)
-6. Eval demo (before/after scores in Respan)
-7. What is next
-```
-
-## Links
-
-- Repo:
-- Respan traces / eval runs:
-- Slides / writeup:
-- Anything else:
+**Not verified yet:** Real cognee graph and LLM answers with production keys; live Scalekit pulls and Slack post as user; Respan trace URL in the UI; eval baseline and improved means (**TBD**); before/after improvement merge; live Slack user id to display name mapping in the wild.
