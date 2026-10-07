@@ -1,4 +1,4 @@
-"""Turn pulled GitHub and Slack items into remember() text plus node_set tags.
+"""Turn pulled source items into remember() text plus node_set tags.
 
 Pure functions, no cognee import. Every document starts with a provenance header
 line (``[tags: ...]``) and every Slack line carries its own channel, user and ts,
@@ -90,10 +90,27 @@ def slack_records(messages: list[dict], owner: str, channels: list[str] | None =
     return records
 
 
-def build_records(github_items, slack_messages, owner: str, channels=None) -> list[dict]:
-    return [github_record(i, owner) for i in github_items or []] + slack_records(
-        slack_messages or [], owner, channels
-    )
+def gmail_record(item: dict, owner: str) -> dict:
+    tags = ["source:gmail", f"owner:{owner}"]
+    label = f"[gmail | {_clean(item.get('subject')) or '(no subject)'} | {_clean(item.get('from')) or 'unknown'}]"
+    return {"text": "\n".join([_tag_header(tags), label, _clean(item.get("body"))]) + "\n",
+            "node_set": tags, "ref": f"gmail:{_clean(item.get('id'))}"}
+
+
+def notion_record(item: dict, owner: str) -> dict:
+    tags = ["source:notion", f"owner:{owner}"]
+    label = f"[notion | {_clean(item.get('title')) or 'Untitled'}]"
+    return {"text": "\n".join([_tag_header(tags), label, f"URL: {_clean(item.get('url'))}",
+                               _clean(item.get("body"))]) + "\n",
+            "node_set": tags, "ref": f"notion:{_clean(item.get('id'))}"}
+
+
+def build_records(github_items, slack_messages, owner: str, channels=None,
+                  gmail_items=None, notion_items=None) -> list[dict]:
+    return ([github_record(i, owner) for i in github_items or []]
+            + slack_records(slack_messages or [], owner, channels)
+            + [gmail_record(i, owner) for i in gmail_items or []]
+            + [notion_record(i, owner) for i in notion_items or []])
 
 
 def tags_in_text(text: str) -> list[str]:
@@ -105,4 +122,7 @@ def tags_in_text(text: str) -> list[str]:
         found.update({"source:slack", f"channel:{match.group(1)}"})
     if "[github " in (text or ""):
         found.add("source:github")
+    for source in ("gmail", "notion"):
+        if f"[{source} | " in (text or ""):
+            found.add(f"source:{source}")
     return sorted(found)
