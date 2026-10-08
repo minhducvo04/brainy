@@ -10,3 +10,4 @@ One dated line per decision or merge, newest last.
 - 16:54 Merged packages 10, 11, 12; reset script real run OK (alice with gmail + notion samples, bob #general).
 - 17:02 Eval v2 before 0.900; 17:04 package 4 merged, after 0.877; reverted (4f3700e). Planner slip: an amend briefly reworded the package 4 merge, fixed before any push.
 - 17:05 Live Scalekit: credentials OK, connected accounts created; Gmail OAuth blocked by missing Google client_id in the Scalekit connection. Demo uses recorded Gmail/Notion.
+- 15:50 README: macOS Apple Silicon Ladybug fix documented on docs/readme-ladybug (commands rerun against .venv, import check printed no error).

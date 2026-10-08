@@ -18,6 +18,8 @@ uv venv --python 3.12 && uv pip install -r requirements.txt
 cp .env.example .env          # fill in RESPAN_API_KEY (+ LLM/EMBEDDING keys) and the three SCALEKIT_* values
 ```
 
+On a Mac with Apple Silicon, also run the Ladybug fix below.
+
 Run on the recorded sample data (no Slack or GitHub account needed):
 
 ```bash
@@ -48,9 +50,9 @@ Live data instead of samples (needs Scalekit connections named `slack` and `gith
 
 Run from the repo root after setting up the keys in Quick start.
 
-1. **Reset.** Run `bash scripts/reset_demo.sh`, then the two sample `ingest` commands
-   in Quick start. The reset script is coming in another package; this step is
-   pending until it lands. Show how PRs and Slack threads feed the brain.
+1. **Reset.** Run `bash scripts/reset_demo.sh`. It backs up the old brains to `runs/`
+   and re-ingests alice (GitHub, Slack, Gmail, Notion samples) and bob (Slack #general).
+   Shares cannot be revoked, so reset before every run.
 2. **Ask as alice.** Look for a cited answer with the migration reason and owner.
 3. **Ask as bob, share, ask again.** Before sharing, expect exactly
    "I can't see that." After sharing, expect an answer citing the shared sources.
@@ -79,13 +81,31 @@ Run from the repo root after setting up the keys in Quick start.
 
 6. **Show Respan traces and eval before/after.** Open the answer traces in Respan.
    Keep the baseline from before the improvement, run the improved version, then
-   compare the same scenarios. Mean scores: before **TBD**, after **TBD**. Report
-   improvement only after the measured after mean exceeds the before mean.
+   compare the same scenarios. Measured on the held-out set 2: before **0.900**,
+   after **0.877**, so the change was reverted (see `SUBMISSION.md`).
 
 ```bash
-.venv/bin/python -m brain.cli eval --scenarios scenarios/scenarios.json --out runs/improved.json
-.venv/bin/python -m eval.score --compare runs/baseline.json runs/improved.json
+.venv/bin/python -m brain.cli eval --scenarios scenarios/scenarios_v2.json --out runs/v2-before.json
+.venv/bin/python -m eval.score --answers runs/v2-before.json --scenarios scenarios/scenarios_v2.json
 ```
+
+## macOS (Apple Silicon): Ladybug fix
+
+On macOS arm64, cognee 1.6.3 uses ladybug 0.19.0 as its graph database. The ladybug wheel does not include its C library, so the first `cognee.remember` fails with `MigrationError: Relational DB Migrations failed`. The log in `~/.cognee/logs` says `Could not find lbug C API shared library`. The library also needs Homebrew OpenSSL 3.
+
+Run this from the repo root after `uv pip install -r requirements.txt`:
+
+```bash
+brew install openssl@3
+LIB=.venv/lib/python3.12/site-packages/.cache/lbug-prebuilt/lib
+mkdir -p "$LIB"
+curl -sSL https://github.com/LadybugDB/ladybug/releases/download/v0.19.0/liblbug-osx-arm64.tar.gz | tar -xz -C "$LIB"
+.venv/bin/python -c "import ladybug._lbug_capi"   # no error = fixed
+```
+
+Notes:
+- Recreating `.venv` removes the fix. Run it again.
+- cognee stores its data inside `.venv` (`site-packages/cognee/.cognee_system`). Recreating `.venv` also wipes ingested data. Re-run the ingest commands.
 
 ## Layout
 
