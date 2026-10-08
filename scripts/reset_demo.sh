@@ -56,6 +56,7 @@ fi
 
 # On any failure put the previous brains back, so a failed reset never leaves the demo empty.
 fail() {
+    trap - INT TERM
     printf '%s\n' "$1" >&2
     if [[ -n "$backup" ]]; then
         mkdir -p "$backup/failed"
@@ -72,6 +73,7 @@ fail() {
     printf 'Details: %s\n' "$log" >&2
     exit 1
 }
+trap 'fail "interrupted."' INT TERM
 
 if [[ "$mode" == "fast" ]]; then
     printf 'Copying the verified golden brains from %s...\n' "$golden"
@@ -111,7 +113,8 @@ if [[ "$mode" == "rebuild" ]]; then
         mv -- "$golden" "$old_golden"
     fi
     mkdir -p "$golden"
-    cp -R .cognee_system .cognee_data "$golden/"
+    cp -R .cognee_system .cognee_data "$golden/" \
+        || { printf 'Reset OK, but saving the golden copy failed; run --rebuild before the next fast reset.\n' >&2; exit 1; }
     printf 'Saved a new golden copy in %s%s.\n' "$golden" "${old_golden:+ (previous one moved to $old_golden)}"
 fi
 
