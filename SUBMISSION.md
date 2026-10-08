@@ -20,7 +20,7 @@ Rationale lives in PRs and Slack. People outside a channel cannot reconstruct de
 
 **Access:** Alice gets a cited answer on the Postgres migration (Carol owns it; JSONB, row locks, replication lag). Bob gets "I can't see that." After Alice shares, Bob gets the cited answer from both brains.
 
-**Eval:** Set 1 (12 scenarios, prompt builder saw them): mean **1.000**, too easy. Held-out set 2 (10 scenarios, never seen by prompt builder): baseline **0.900**. The miss is a mixed question where Bob refuses everything instead of answering the public part. We tried provenance labels on each chunk plus a stricter citation prompt: **0.877**, one scenario lost a fact, reverted. This reverted baseline is the honest result; next step is the mixed-question refusal.
+**Eval:** Set 1 (12 scenarios): mean **1.000**, too easy. Held-out set 2 (10 scenarios, never seen by prompt builder): baseline **0.900**. The miss is a mixed question where Bob refuses everything instead of answering the public part. We tried provenance labels on each chunk plus a stricter citation prompt: **0.877**, one scenario lost a fact, reverted. This reverted baseline is the honest result; next step is the mixed-question refusal.
 
 ## Demo and run
 
@@ -28,6 +28,6 @@ Alice/Bob ingest from sample data, ask migration question, share, Bob asks again
 
 ## Gaps
 
-Gmail ingest waits on Scalekit Google OAuth. Mixed public/private answers not fixed. Live Slack id-to-name mapping not fully verified.
+Live Gmail pull waits on a Google OAuth client in Scalekit (recorded Gmail and Notion ingest works). Mixed public/private answers not fixed. Live Slack id-to-name mapping not fully verified.
 
 Submission with Duc's approval: event PR at `submissions/brainy/SUBMISSION.md` or repo link to organizers by 6:00 PM PT.
