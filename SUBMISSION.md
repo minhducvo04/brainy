@@ -3,7 +3,7 @@
 ## Team
 
 - Team name: Brainy
-- Participants: Duc Vo. Additional human participants: confirm before submission.
+- Participants: Duc Vo.
 - Company Brain / project name: Brainy
 
 ## Company Brain Overview
@@ -24,7 +24,7 @@ Brainy helps engineering teammates reconstruct decisions from source records: wh
 - The acting identifier is passed to Scalekit. Cognee maps demo aliases `alice` / `bob` to fictional `alice@acme.com` / `bob@acme.com`; these are not real inboxes or OAuth accounts.
 - Write-back: `slack_send_message`, through the acting user's connection. Demo uses `post --dry-run`; a live post is not claimed.
 - Latest blockers: Gmail OAuth client configuration; Notion authorization returned connection-not-found.
-- Entry points: `brain/pull.py`, `brain/act.py`, `brain/cli.py`.
+- Entry points: [brain/pull.py](https://github.com/minhducvo04/brainy/blob/codex/judge-demo-guide/brain/pull.py), [brain/act.py](https://github.com/minhducvo04/brainy/blob/codex/judge-demo-guide/brain/act.py), [brain/cli.py](https://github.com/minhducvo04/brainy/blob/codex/judge-demo-guide/brain/cli.py).
 
 ### Remember: Cognee
 
@@ -33,7 +33,7 @@ Brainy helps engineering teammates reconstruct decisions from source records: wh
 - Datasets: Alice owns `alice-brain`; Bob owns `bob-brain`. Read access is granted explicitly.
 - `ENABLE_BACKEND_ACCESS_CONTROL=true`; recall resolves authorized datasets and supplies only their IDs.
 - Uses `SearchType.CHUNKS` to retrieve raw passages. No custom ontology or `improve()` claim.
-- Entry points: `brain/records.py`, `brain/memory.py`.
+- Entry points: [brain/records.py](https://github.com/minhducvo04/brainy/blob/codex/judge-demo-guide/brain/records.py), [brain/memory.py](https://github.com/minhducvo04/brainy/blob/codex/judge-demo-guide/brain/memory.py).
 
 ### Act + Evaluate: agent + Respan
 
@@ -42,7 +42,7 @@ Brainy helps engineering teammates reconstruct decisions from source records: wh
 - Tracing: Respan SDK `workflow(name="answer")` decorator. A live smoke test returned an answer and HTTP 200 trace export; dashboard visibility still needs confirmation.
 - Scenario sets: `scenarios/scenarios.json` (12); `scenarios/scenarios_v2.json` (10).
 - Evaluator: independent Python checks, 70% required fact mentions and 30% expected source tags; forbidden mentions score zero; refusal scenarios check refusal text. No LLM judge. This is not a full semantic citation audit.
-- Entry points: `brain/agent.py`, `eval/score.py`.
+- Entry points: [brain/agent.py](https://github.com/minhducvo04/brainy/blob/codex/judge-demo-guide/brain/agent.py), [eval/score.py](https://github.com/minhducvo04/brainy/blob/codex/judge-demo-guide/eval/score.py).
 
 ## Evaluation Evidence
 
@@ -51,7 +51,7 @@ Brainy helps engineering teammates reconstruct decisions from source records: wh
 - Respan trace / eval run link: **not yet attached**; organizer access must be verified.
 - Initial set: 12 scenarios, mean **1.000** (ceiling).
 - Harder held-out set: 10 scenarios, baseline **0.900**, as recorded by the planner in the project status.
-- Worst reported behavior: a mixed public/private question was refused completely instead of answering its public part. Exact per-scenario question, output, and score are not reproduced here; raw evidence still needs attachment. The submission-prep agent did not open or rerun the held-out set.
+- Worst reported behavior: a mixed public/private question was refused completely instead of answering its public part. Exact per-scenario question, output, and score are not reproduced here; raw per-scenario evidence is not attached. These aggregate measurements are reported from the team's recorded run, not a new evaluation.
 
 ### Improved Run
 
@@ -87,13 +87,15 @@ User question → readable dataset IDs → scoped recall
 Owner grant → additional readable dataset on subsequent recall
 ```
 
-Full diagrams and screenshots: [README](https://github.com/minhducvo04/brainy#judges-guide-see-the-demo-here). UI identity switching is a demo control, not production authentication. Source permissions are not continuously synchronized with stored memory.
+Full diagrams and screenshots: [README](https://github.com/minhducvo04/brainy/blob/codex/judge-demo-guide/README.md#judges-guide-see-the-demo-here). UI identity switching is a demo control, not production authentication. Source permissions are not continuously synchronized with stored memory.
 
 ## Reproduction
 
-See README for environment setup and the Apple Silicon dependency fix. From the repository root:
+See the [README](https://github.com/minhducvo04/brainy/blob/codex/judge-demo-guide/README.md) for environment setup and the Apple Silicon dependency fix. From the repository root:
 
 ```bash
+git clone --branch codex/judge-demo-guide https://github.com/minhducvo04/brainy.git
+cd brainy
 uv venv --python 3.12
 uv pip install -r requirements.txt
 cp .env.example .env
@@ -121,5 +123,6 @@ Judges can use `sample_data/` without our SaaS accounts, but need their own mode
 
 - Repo: https://github.com/minhducvo04/brainy
 - Respan traces / eval runs: not yet attached.
-- Writeup and diagrams: repository README.
-- Private `cognee-feedback.md`: prepared separately for participant review and organizer-directed handoff; never committed with this submission.
+- Writeup and diagrams: [README](https://github.com/minhducvo04/brainy/blob/codex/judge-demo-guide/README.md).
+- Runnable demo branch: https://github.com/minhducvo04/brainy/tree/codex/judge-demo-guide
+
