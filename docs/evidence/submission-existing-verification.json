@@ -1,0 +1,122 @@
+{
+  "purpose": "Reviewable summary of existing local verification records. No new live run was performed to prepare this file.",
+  "prepared_on": "2026-10-07",
+  "application_commit": "19bed11",
+  "evidence_scope": "Synthetic fixtures and local Cognee checks; not a complete live Scalekit application run.",
+  "unit_tests": {
+    "source_record": "runs/submission-validation.json",
+    "command": "PYTHONPATH=. .venv/bin/python -m pytest -q",
+    "passed": 19,
+    "failed": 0,
+    "raw_log_distributed": false
+  },
+  "gateway_retry": {
+    "source_record": "runs/submission-gateway-retry.json",
+    "checks": [
+      {
+        "interface": "embedding",
+        "status": "pass",
+        "dimensions": 3072
+      },
+      {
+        "interface": "chat",
+        "status": "pass",
+        "response_received": true
+      }
+    ],
+    "scope": "Direct chat and embedding probes only; not an end-to-end evaluation."
+  },
+  "cognee_smoke": {
+    "source_record": "runs/cognee_verified_retest.json",
+    "checked_at_utc": "2026-10-08T00:17:17.846513+00:00",
+    "fixture_documents": 1,
+    "checks": [
+      {
+        "stage": "empty_reader",
+        "status": "pass",
+        "seconds": 0.38,
+        "chunks": 0
+      },
+      {
+        "stage": "remember",
+        "status": "pass",
+        "seconds": 53.46,
+        "documents": 1
+      },
+      {
+        "stage": "owner_recall",
+        "status": "pass",
+        "seconds": 0.53,
+        "chunks": 1
+      },
+      {
+        "stage": "reader_before_share",
+        "status": "pass",
+        "seconds": 0.01,
+        "chunks": 0
+      },
+      {
+        "stage": "share",
+        "status": "pass",
+        "seconds": 0.08,
+        "permission": "read"
+      },
+      {
+        "stage": "reader_after_share",
+        "status": "pass",
+        "seconds": 0.42,
+        "chunks": 1
+      },
+      {
+        "stage": "forget_test_dataset",
+        "status": "pass",
+        "seconds": 2.6
+      },
+      {
+        "stage": "reader_after_forget",
+        "status": "pass",
+        "seconds": 0.01,
+        "chunks": 0
+      }
+    ],
+    "passed": 8,
+    "failed": 0,
+    "not_verified": [
+      "Full application answer generation with citations",
+      "Live Slack and GitHub integrations"
+    ],
+    "scope": "This earlier isolated smoke check used its own test dataset and model configuration. It does not validate the full Brainy answer flow or current environment."
+  },
+  "historical_evaluation": {
+    "source_records": [
+      "docs/log/README.md",
+      "SUBMISSION.md at application commit 19bed11"
+    ],
+    "original": {
+      "scenario_file": "scenarios/scenarios.json",
+      "scenario_count": 12,
+      "reported_mean": 1.0
+    },
+    "baseline": {
+      "scenario_file": "scenarios/scenarios_v2.json",
+      "scenario_count": 10,
+      "reported_mean": 0.9
+    },
+    "candidate": {
+      "scenario_file": "scenarios/scenarios_v2.json",
+      "scenario_count": 10,
+      "reported_mean": 0.877,
+      "commit": "7c4c746"
+    },
+    "revert_commit": "4f3700e",
+    "raw_answers_available": false,
+    "shareable_respan_links_available": false,
+    "fresh_scores_available": false
+  },
+  "limitations": [
+    "This file summarizes existing records; it is not a raw trace export.",
+    "Local source records under runs/ are gitignored and not distributed.",
+    "The completed two-app, two-user live Scalekit pull is not evidenced.",
+    "Historical evaluation means cannot be independently recalculated without the missing answer exports."
+  ]
+}
