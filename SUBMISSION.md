@@ -8,44 +8,26 @@
 
 Rationale lives in PRs and Slack. People outside a channel cannot reconstruct decisions without manual search.
 
-## Built; live behavior not verified
+## Built
 
-**Scalekit:** Per-user Slack and GitHub pull; write-back (e.g. Slack post) as that user, not a bot. Demo users: Alice (GitHub + Slack #eng and #general); Bob (Slack #general only).
+**Scalekit:** Per-user pulls for Slack, GitHub, Gmail, and Notion are built and unit tested. Live credentials authenticate and per-user connected accounts are created. Live Gmail sign-in is blocked because the Scalekit Gmail connection has no Google OAuth client yet; the demo uses recorded Northwind sample data.
 
-**Cognee:** Per-user datasets; `node_set` tags for source, channel, owner; share from Alice to Bob; refusals when recall lacks permission.
+**Cognee:** Per-user datasets, permission tags, share Alice to Bob, refusals without access.
 
-**Respan:** LLM via gateway; `ask` tracing code; 12 scenarios scored in Python (facts, sources, leak = 0). Baseline and improved means **TBD**.
+**Respan:** Every LLM call goes through the gateway. Traces export (HTTP 200, workflow span `answer.workflow`).
 
-Flow: Scalekit pull → Cognee permanent graph → permission-filtered recall → Respan-traced answer → Python scores. No session memory.
+## Verified today (2026-10-07, real cognee + LLM via Respan)
 
-## Planned 3-minute demo (not rehearsed)
+**Access:** Alice gets a cited answer on the Postgres migration (Carol owns it; JSONB, row locks, replication lag). Bob gets "I can't see that." After Alice shares, Bob gets the cited answer from both brains.
 
-1. Problem: scattered decisions.
-2. Ingest or pull as Alice and Bob; different memory size.
-3. Alice asks the Postgres migration question; answer cites PR + thread.
-4. Bob: "I can't see that." Share; Bob gets the same answer.
-5. Brief to Alice's Slack via Scalekit (dry-run or live).
-6. Eval before/after: means **TBD**; Respan links **TBD**.
+**Eval:** Set 1 (12 scenarios, prompt builder saw them): mean **1.000**, too easy. Held-out set 2 (10 scenarios, never seen by prompt builder): baseline **0.900**. The miss is a mixed question where Bob refuses everything instead of answering the public part. We tried provenance labels on each chunk plus a stricter citation prompt: **0.877**, one scenario lost a fact, reverted. This reverted baseline is the honest result; next step is the mixed-question refusal.
 
-## How to run
+## Demo and run
 
-README quick start: Python 3.12, `uv venv`, `uv pip install -r requirements.txt`, `.env` from `.env.example` (Respan, LLM/embedding, Scalekit). Sample data:
+Alice/Bob ingest from sample data, ask migration question, share, Bob asks again; show Respan trace. README: Python 3.12, `uv venv`, `uv pip install -r requirements.txt`, `.env` from `.env.example`. Eval: `python -m brain.cli eval` plus `python -m eval.score` on set 1 or held-out set 2 in the repo.
 
-```bash
-.venv/bin/python -m brain.cli ingest --user alice --github sample_data/github.json --slack sample_data/slack.json --channels eng,general
-.venv/bin/python -m brain.cli ingest --user bob --slack sample_data/slack.json --channels general
-.venv/bin/python -m brain.cli ask --user alice "Why did we switch to Postgres and who owns the migration?"
-.venv/bin/python -m brain.cli ask --user bob "Why did we switch to Postgres and who owns the migration?"
-.venv/bin/python -m brain.cli share --owner alice --to bob
-.venv/bin/python -m brain.cli ask --user bob "Why did we switch to Postgres and who owns the migration?"
-```
+## Gaps
 
-Eval: `python -m brain.cli eval --scenarios scenarios/scenarios.json --out runs/baseline.json`, then `python -m eval.score --answers runs/baseline.json`. Use the venv Python. Change and improved score: **TBD**. Live pull needs Scalekit `slack` and `github` connections.
+Gmail ingest waits on Scalekit Google OAuth. Mixed public/private answers not fixed. Live Slack id-to-name mapping not fully verified.
 
-## What is verified
-
-**Recorded in STATUS.md, with keys absent:** Sample ingest; Alice 17 docs, Bob 4; Bob refused pre-share in keyless path; eval outputs 12 rows; scorer runs; tracing code merged (no live trace).
-
-**Not verified:** Real cognee + LLM answers; live Scalekit pull/post; Respan UI trace; eval baseline/improved scores (**TBD**); improvement package; live Slack id-to-name mapping.
-
-Submission: with Duc's approval, open the event PR at `submissions/brainy/SUBMISSION.md` or give the repo link to an organizer by 6:00 PM PT.
+Submission with Duc's approval: event PR at `submissions/brainy/SUBMISSION.md` or repo link to organizers by 6:00 PM PT.
