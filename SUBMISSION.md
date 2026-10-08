@@ -2,7 +2,7 @@
 
 Prepared October 7, 2026, from application commit `19bed11` and existing local verification records. **Not yet verified: a complete two-app, two-user live Scalekit pull, shareable Respan run links, and a successful measured improvement.** The reproducible demo uses synthetic company data.
 
-Existing records show 19 tests passed, successful Respan chat and embedding probes, and eight passing checks in an isolated Cognee memory/access smoke test. The full demo and evaluation results below are historical team-reported results. No completed fresh evaluation export was available when this document was prepared. See the [verification summary](docs/evidence/submission-existing-verification.json) for the evidence scope and the [team run log](docs/log/README.md) for the historical runs.
+Existing records show 19 tests passed, successful Respan chat and embedding probes, and eight passing checks in an isolated Cognee memory/access smoke test. The full demo and evaluation results below are historical team-reported results. No completed fresh evaluation export was available when this document was prepared. See the [team run log](docs/log/README.md) for the historical runs.
 
 ## Team
 
@@ -66,7 +66,7 @@ The original 12-scenario set reached a reported mean of **1.000**, so the team a
 | Original scenario set | Reported mean 1.000, 12 scenarios | Historical score on the easier set |
 | Harder scenario set | Reported baseline 0.900; candidate 0.877, 10 scenarios each | Historical regression that led to a revert |
 
-The [verification summary](docs/evidence/submission-existing-verification.json) preserves selected results from existing local records. It is a summary, not a raw trace export. The isolated Cognee check does not establish full answer quality, cross-source retrieval, or live connector success.
+The table above summarizes existing local verification records; it is not a raw trace export. The isolated Cognee check does not establish full answer quality, cross-source retrieval, or live connector success.
 
 ### Baseline Run
 
@@ -235,7 +235,6 @@ Prepare ingestion and evaluation before the timed demo. The trace segment requir
 - Slides / writeup: This submission and the [README](README.md); no slides.
 - Scenario files: [Original 12](scenarios/scenarios.json), [harder 10](scenarios/scenarios_v2.json).
 - Prior verification record: [Team run log](docs/log/README.md).
-- Existing local verification summary: [Tests, gateway probes, and Cognee access checks](docs/evidence/submission-existing-verification.json).
 - Synthetic fixture description: [Northwind Labs sample data](sample_data/README.md).
 
 ## Remaining Evidence Gaps
