@@ -1,158 +1,33 @@
-# Team Submission
+# Brainy submission draft
 
-## Team
+**Team:** Duc Vo (Brainy). **Repo:** https://github.com/minhducvo04/brainy
 
-- Team name:
-- Participants:
-- Company Brain / project name:
+**Pitch:** Cited answers to "why we picked X, who owns it, what is open" from GitHub and Slack, per user access.
 
-## Company Brain Overview
+## Problem
 
-One-paragraph description of what your Company Brain does, which team
-workflow it solves, and who the users are.
+Rationale lives in PRs and Slack. People outside a channel cannot reconstruct decisions without manual search.
 
-- Data sources connected through Scalekit (≥ 2 apps):
-- Primary use case / team workflow:
-- Users in the demo and how their access differs:
-- What makes it stand out:
+## Built
 
-## The Three Layers
+**Scalekit:** Per-user pulls for Slack, GitHub, Gmail, and Notion are built and unit tested. Live credentials authenticate and per-user connected accounts are created. Live Gmail sign-in is blocked because the Scalekit Gmail connection has no Google OAuth client yet; the demo uses recorded Northwind sample data.
 
-### Pull — Scalekit
+**Cognee:** Per-user datasets, permission tags, share Alice to Bob, refusals without access.
 
-- Connections created (`connection_name` → app):
-- Tools called (`gmail_fetch_mails`, `slack_fetch_conversation_history`,
-  `googledrive_export_file`, `github_file_contents_get`, ...):
-- How users are identified (`identifier` ↔ Cognee user):
-- Any write-back actions the agent takes (post, draft, open issue, push
-  branch/commit, open PR):
-- Code entry point:
+**Respan:** Every LLM call goes through the gateway. Traces export (HTTP 200, workflow span `answer.workflow`).
 
-### Remember — Cognee
+## Verified today (2026-10-07, real cognee + LLM via Respan)
 
-- What goes into the permanent graph (`cognee.remember(...)` without
-  `session_id`):
-- What stays in session memory (`session_id=...`), if anything:
-- `node_set` tags used for provenance (`source:*`, `channel:*`, `owner:*`):
-- Datasets and who owns / can read each:
-- Access control (`ENABLE_BACKEND_ACCESS_CONTROL`, shares granted):
-- Anything beyond defaults (custom graph model, ontology, `improve()`,
-  custom prompt, `query_type` choice):
-- Code entry point:
+**Access:** Alice gets a cited answer on the Postgres migration (Carol owns it; JSONB, row locks, replication lag). Bob gets "I can't see that." After Alice shares, Bob gets the cited answer from both brains.
 
-### Act + Evaluate — your agent(s) + Respan
+**Eval:** Set 1 (12 scenarios): mean **1.000**, too easy. Held-out set 2 (10 scenarios, never seen by prompt builder): baseline **0.900**. The miss is a mixed question where Bob refuses everything instead of answering the public part. We tried provenance labels on each chunk plus a stricter citation prompt: **0.877**, one scenario lost a fact, reverted. This reverted baseline is the honest result; next step is the mixed-question refusal.
 
-- Agent(s) and the task each performs:
-- LLM calls routed through the Respan gateway? (models used):
-- How the runs are traced (Respan SDK decorator / instrumentor):
-- Scenario file / Respan testset (path, number of scenarios):
-- Evaluator (LLM judge + model, Python check, human review):
-- Code entry point:
+## Demo and run
 
-## Evaluation Evidence
+Alice/Bob ingest from sample data, ask migration question, share, Bob asks again; show Respan trace. README: Python 3.12, `uv venv`, `uv pip install -r requirements.txt`, `.env` from `.env.example`. Eval: `python -m brain.cli eval` plus `python -m eval.score` on set 1 or held-out set 2 in the repo.
 
-Show that the brain does the job — and that it got better. Concrete numbers
-beat prose.
+## Gaps
 
-### Baseline Run
+Live Gmail pull waits on a Google OAuth client in Scalekit (recorded Gmail and Notion ingest works). Mixed public/private answers not fixed. Live Slack id-to-name mapping not fully verified.
 
-- Respan trace / eval run link:
-- Scenarios run:
-- Mean score:
-- Worst scenario and why it failed:
-
-```text
-question:
-expected:
-got:
-score:
-```
-
-### Improved Run
-
-- Respan trace / eval run link:
-- What changed in the brain or agent between runs (one or two sentences):
-- Mean score:
-
-```text
-Before:  mean = ___   (n = ___ scenarios)
-After:   mean = ___   (n = ___ scenarios)
-```
-
-## Access Story
-
-Two users, the same question, different results — then a grant.
-
-- User A (identifier, connections, datasets readable):
-- User B (identifier, connections, datasets readable):
-- Question asked by both:
-- Result for A:
-- Result for B before the share:
-- The grant (who shared what with whom, which permission):
-- Result for B after the share:
-
-## Architecture
-
-Short diagram or bullet list. The hackathon's core pattern is
-**Pull → Remember → Act → Evaluate** across the three layers; show how yours
-maps onto it and where user access is enforced.
-
-```text
-[ Scalekit connections, per user ]
-        |
-        | execute_tool(identifier=...)  -> documents / threads / issues
-        v
-[ Cognee — remember(node_set=[...], dataset_name=..., user=...) ]
-        |
-        | recall(question, user=...)   -> grounded context
-        v
-[ your agent — traced by Respan ]    -> answer / brief / action (via Scalekit)
-        |
-        v
-[ Respan evaluator over testset ]    -> scenarios -> scores -> before/after
-```
-
-## Reproduction
-
-Commands to reproduce your demo and your eval:
-
-```bash
-# paste commands here
-```
-
-Environment variables required:
-
-```text
-RESPAN_API_KEY                # Respan gateway credits, provided at kickoff
-LLM_PROVIDER / LLM_ENDPOINT / LLM_API_KEY / LLM_MODEL      # cognee -> Respan gateway
-EMBEDDING_PROVIDER / EMBEDDING_ENDPOINT / EMBEDDING_API_KEY / EMBEDDING_MODEL / EMBEDDING_DIMENSIONS
-SCALEKIT_ENVIRONMENT_URL
-SCALEKIT_CLIENT_ID
-SCALEKIT_CLIENT_SECRET
-# add anything else your brain needs
-```
-
-Judges without your SaaS accounts: how do they run it? (sample data folder,
-recorded pull, seeded dataset, ...)
-
-## Demo
-
-- Live demo link (Loom, YouTube, etc.) or local instructions:
-- 3-minute pitch outline:
-
-```text
-1. Problem / team workflow
-2. Pull demo (Scalekit, two sources, as user A)
-3. Brain demo (Cognee graph + a cross-source answer)
-4. Access demo (user B asks, gets less; grant; asks again)
-5. Agent task demo (traced run, action taken)
-6. Eval demo (before/after scores in Respan)
-7. What is next
-```
-
-## Links
-
-- Repo:
-- Respan traces / eval runs:
-- Slides / writeup:
-- Anything else:
+Submission with Duc's approval: event PR at `submissions/brainy/SUBMISSION.md` or repo link to organizers by 6:00 PM PT.

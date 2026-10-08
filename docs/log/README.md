@@ -3,6 +3,14 @@ One dated line per decision or merge, newest last.
 - 15:23 Merged memory+agent+CLI 2ce4354 (imports and keyless dry run ok; real cognee/LLM unverified).
 - 15:33 Merged package 6 Slack names da384dd (6 tests pass, faked Scalekit; live tool name unverified).
 - 15:35 Merged package 3 Respan tracing b595e8d (keyless no-op, fake key wraps answer; live trace unverified).
+- 15:50 Pushed main e62941e to github.com/minhducvo04/brainy (Duc pushed; emails rewritten to no-reply, files identical to backup).
+- 16:13 Package 1 verified with real calls: alice 17 docs, bob 4, bob refused, share, bob answered with citations from both brains.
+- 16:25 Baseline eval 12/12 mean 1.000 after re-ingest under text-embedding-3-large; ceiling, so package 10 (harder held-out set) added for Cursor.
+- 16:28 Merged package 5 seed script and package 7 SUBMISSION draft (both reviewed by Codex Astra; tests 6 pass; dry run 19/7).
+- 16:54 Merged packages 10, 11, 12; reset script real run OK (alice with gmail + notion samples, bob #general).
+- 17:02 Eval v2 before 0.900; 17:04 package 4 merged, after 0.877; reverted (4f3700e). Planner slip: an amend briefly reworded the package 4 merge, fixed before any push.
+- 17:05 Live Scalekit: credentials OK, connected accounts created; Gmail OAuth blocked by missing Google client_id in the Scalekit connection. Demo uses recorded Gmail/Notion.
 - 15:50 README: macOS Apple Silicon Ladybug fix documented on docs/readme-ladybug (commands rerun against .venv, import check printed no error).
 - 17:06 Sample-data run verified live: ingest alice 17 / bob 4, bob refused, then answered after share (after Ladybug dylib + openssl@3 fix).
 - 17:40 Merged Notion pull b87dc5d (verified live: 2 databases, 15 rows; tests 5 pass, 1 skipped, pytest not installed). Merged on Miguel's go; no non-author review yet.
+- 17:50 Merged origin/main into local main (package 8 Gmail + Notion search pull and package 13 Notion database pull kept side by side as pull_notion / pull_notion_databases). pytest 19 passed; live notion_db pull 15 rows.

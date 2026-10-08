@@ -46,6 +46,49 @@ Live data instead of samples (needs Scalekit connections named `slack` and `gith
 .venv/bin/python -m brain.cli post --user alice@acme.com --to "#eng" --text "brief" --dry-run
 ```
 
+## Demo (3 minutes)
+
+Run from the repo root after setting up the keys in Quick start.
+
+1. **Reset.** Run `bash scripts/reset_demo.sh`. It backs up the old brains to `runs/`
+   and re-ingests alice (GitHub, Slack, Gmail, Notion samples) and bob (Slack #general).
+   Shares cannot be revoked, so reset before every run.
+2. **Ask as alice.** Look for a cited answer with the migration reason and owner.
+3. **Ask as bob, share, ask again.** Before sharing, expect exactly
+   "I can't see that." After sharing, expect an answer citing the shared sources.
+
+```bash
+.venv/bin/python -m brain.cli ask --user alice "Why did we switch to Postgres and who owns the migration?"
+.venv/bin/python -m brain.cli ask --user bob "Why did we switch to Postgres and who owns the migration?"
+.venv/bin/python -m brain.cli share --owner alice --to bob
+.venv/bin/python -m brain.cli ask --user bob "Why did we switch to Postgres and who owns the migration?"
+```
+
+4. **Optional Gmail + Notion.** Once those packages and their fictional samples
+   are loaded for alice, ask the search question. Look for citations to the email
+   and page, including the reason and open work.
+
+```bash
+.venv/bin/python -m brain.cli ask --user alice "Why did we pick Typesense for search and what is still open?"
+```
+
+5. **Preview a Slack post as alice through Scalekit.** Replace the text below with
+   the cited answer. This dry run shows the intended post without sending it.
+
+```bash
+.venv/bin/python -m brain.cli post --user alice --to "#eng" --text "Paste the cited answer here" --dry-run
+```
+
+6. **Show Respan traces and eval before/after.** Open the answer traces in Respan.
+   Keep the baseline from before the improvement, run the improved version, then
+   compare the same scenarios. Measured on the held-out set 2: before **0.900**,
+   after **0.877**, so the change was reverted (see `SUBMISSION.md`).
+
+```bash
+.venv/bin/python -m brain.cli eval --scenarios scenarios/scenarios_v2.json --out runs/v2-before.json
+.venv/bin/python -m eval.score --answers runs/v2-before.json --scenarios scenarios/scenarios_v2.json
+```
+
 ## macOS (Apple Silicon): Ladybug fix
 
 On macOS arm64, cognee 1.6.3 uses ladybug 0.19.0 as its graph database. The ladybug wheel does not include its C library, so the first `cognee.remember` fails with `MigrationError: Relational DB Migrations failed`. The log in `~/.cognee/logs` says `Could not find lbug C API shared library`. The library also needs Homebrew OpenSSL 3.

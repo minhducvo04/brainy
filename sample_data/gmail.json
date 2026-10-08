@@ -1,0 +1,10 @@
+[
+  {
+    "id": "northwind-search-decision-20261003",
+    "subject": "[Northwind demo] Decision: Typesense for in-app search",
+    "from": "dave@northwind.example",
+    "date": "2026-10-07T16:11:00-07:00",
+    "body": "Hi Alice,\n\nWriting this down so it does not get lost in Slack. We are going with Typesense instead of Algolia for in-app search. Reasons: about 70% cheaper at our volume, we can self-host it next to Postgres, and typo tolerance tested as well as Algolia on our product names.\n\nDave owns the rollout. Target is October 28 behind the search_v2 flag. Still open: how we shard the index once we pass 5 million documents. The full record is in Notion, \"Search decision record\".\n\nDave (Northwind Labs, fictional)",
+    "to": "alice@northwind.example"
+  }
+]
