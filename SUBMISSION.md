@@ -17,7 +17,7 @@ Brainy helps engineering teammates reconstruct decisions from source records: wh
 
 ## The Three Layers
 
-### Pull — Scalekit
+### Pull: Scalekit
 
 - Configured defaults expected by code: `slack` → Slack, `github` → GitHub, `gmail` → Gmail, `notion` → Notion. These are expected connection names, not a claim that all four are active.
 - Tool names in code: `slack_fetch_conversation_history`, `slack_get_conversation_replies`, `slack_get_user_info`, `github_issues_list`, `github_pull_requests_list`, `gmail_fetch_mails`, `gmail_get_message_by_id`, `notion_page_search`, `notion_page_content_get`. Complete live execution is not verified.
@@ -26,7 +26,7 @@ Brainy helps engineering teammates reconstruct decisions from source records: wh
 - Latest blockers: Gmail OAuth client configuration; Notion authorization returned connection-not-found.
 - Entry points: `brain/pull.py`, `brain/act.py`, `brain/cli.py`.
 
-### Remember — Cognee
+### Remember: Cognee
 
 - Permanent memory: normalized source text passed to `cognee.remember`; no `session_id` is used. No separate session memory is implemented.
 - Provenance: `node_set` tags such as `source:slack`, `channel:eng`, `owner:alice@acme.com`, and source-specific author/repository tags.
@@ -35,7 +35,7 @@ Brainy helps engineering teammates reconstruct decisions from source records: wh
 - Uses `SearchType.CHUNKS` to retrieve raw passages. No custom ontology or `improve()` claim.
 - Entry points: `brain/records.py`, `brain/memory.py`.
 
-### Act + Evaluate — agent + Respan
+### Act + Evaluate: agent + Respan
 
 - Agent: one cited-answer workflow, with refusal when no evidence is retrieved and a prompt against unsupported answers.
 - Answer calls use the Respan gateway with default model `openai/gpt-5-mini` (environment configurable).
