@@ -1,4 +1,4 @@
-"""Per-user pulls from Slack and GitHub through Scalekit AgentKit.
+"""Per-user pulls from Slack, GitHub and Notion through Scalekit AgentKit.
 
 Follows examples/scalekit_to_cognee.py: authorize once per user per connection
 (the link is printed when the account is not ACTIVE), then ``execute_tool`` with
@@ -7,6 +7,8 @@ Follows examples/scalekit_to_cognee.py: authorize once per user per connection
 Output is normalized to the recorded shapes in sample_data/:
   GitHub: {id, number, kind, title, body, author, url, created_at, repo}
   Slack:  {channel, user, ts, text, thread_ts}  (thread_ts is None for a thread root)
+  Notion: {id, database, title, url, created_at, edited_at, properties, body}  (properties flattened to text;
+          people as emails, relations as related row titles)
 
 Tool names come from the Scalekit connector docs (docs.scalekit.com/agentkit/connectors/
 slack and /github). The raw output shape of each tool was not seen live, so the
@@ -25,6 +27,10 @@ SLACK_REPLIES_TOOL = "slack_get_conversation_replies"  # inputs: channel, ts, li
 SLACK_USER_TOOL = "slack_get_user_info"  # inputs: user (Slack users.info); name not seen live
 GITHUB_ISSUES_TOOL = "github_issues_list"  # inputs: owner, repo, state, per_page, page
 GITHUB_PULLS_TOOL = "github_pull_requests_list"  # inputs: owner, repo, state, per_page, page
+NOTION_DB_FETCH_TOOL = "notion_database_fetch"  # inputs: database_id
+NOTION_DB_QUERY_TOOL = "notion_database_query"  # inputs: database_id, page_size, start_cursor (2022-06-28 API)
+NOTION_DS_QUERY_TOOL = "notion_data_source_query"  # inputs: data_source_id, ... (2025-09-03 API)
+NOTION_MARKDOWN_TOOL = "notion_page_markdown_get"  # inputs: page_id
 
 
 def scalekit_actions():
@@ -241,6 +247,153 @@ def pull_github(actions, connection: str, user: str, repo: str, limit: int = 200
     return items
 
 
+# --- Notion ----------------------------------------------------------------
+
+_NOTION_ID = re.compile(r"([0-9a-f]{32})|([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})", re.I)
+
+
+def notion_id(url_or_id: str) -> str:
+    """Hyphenated UUID from a Notion database URL or id (the last 32 hex chars of the path)."""
+    path = url_or_id.split("?", 1)[0]
+    matches = _NOTION_ID.findall(path)
+    if not matches:
+        raise ValueError(f"no Notion id in {url_or_id!r}")
+    raw = "".join(matches[-1]).replace("-", "").lower()
+    return f"{raw[:8]}-{raw[8:12]}-{raw[12:16]}-{raw[16:20]}-{raw[20:]}"
+
+
+def _plain(rich) -> str:
+    return "".join(str(part.get("plain_text") or "") for part in rich or [] if isinstance(part, dict)).strip()
+
+
+def _person(p: dict) -> str:
+    person = p.get("person") or {}
+    return str(person.get("email") or p.get("name") or p.get("id") or "")
+
+
+def notion_value(prop: dict):
+    """Flatten one Notion property to a string or list of strings; relations stay page ids."""
+    kind = prop.get("type")
+    value = prop.get(kind)
+    if kind in ("title", "rich_text"):
+        return _plain(value)
+    if kind in ("select", "status"):
+        return str((value or {}).get("name") or "")
+    if kind == "multi_select":
+        return [str(v.get("name")) for v in value or []]
+    if kind == "people":
+        return [_person(p) for p in value or []]
+    if kind in ("created_by", "last_edited_by"):
+        return _person(value or {})
+    if kind == "relation":
+        return [str(r.get("id")) for r in value or []]
+    if kind == "date":
+        return " to ".join(str(v) for v in ((value or {}).get("start"), (value or {}).get("end")) if v)
+    if kind in ("formula", "rollup"):
+        inner = (value or {}).get((value or {}).get("type"))
+        if isinstance(inner, list):
+            return [str(notion_value(i) if isinstance(i, dict) and "type" in i else i) for i in inner]
+        return "" if inner is None else str(inner.get("start") if isinstance(inner, dict) else inner)
+    return "" if value is None else value if isinstance(value, (str, list)) else str(value)
+
+
+def normalize_notion_row(raw: dict, database: str) -> dict:
+    props = {name: notion_value(prop) for name, prop in (raw.get("properties") or {}).items()}
+    title = next((props[n] for n, p in (raw.get("properties") or {}).items() if p.get("type") == "title"), "")
+    return {
+        "id": str(raw.get("id") or ""),
+        "database": database,
+        "title": title or "(untitled)",
+        "url": str(raw.get("url") or ""),
+        "created_at": str(raw.get("created_time") or ""),
+        "edited_at": str(raw.get("last_edited_time") or ""),
+        "properties": props,
+        "body": "",
+    }
+
+
+def _notion_rows(actions, connection: str, user: str, database_id: str, limit: int) -> list[dict]:
+    """Query with the 2022 API; databases that need the 2025 data-source API are retried through
+    their first data source (id read from notion_database_fetch)."""
+
+    def run(tool: str, key: str, ident: str) -> list[dict]:
+        rows: list[dict] = []
+        cursor = None
+        while len(rows) < limit:
+            tool_input = {key: ident, "page_size": min(100, limit - len(rows))}
+            if cursor:
+                tool_input["start_cursor"] = cursor
+            result = actions.execute_tool(tool_name=tool, tool_input=tool_input, connection_name=connection, identifier=user)
+            data = result.data
+            rows += _items(data, "results")
+            cursor = data.get("next_cursor") if isinstance(data, dict) and data.get("has_more") else None
+            if not cursor:
+                break
+        return rows
+
+    try:
+        return run(NOTION_DB_QUERY_TOOL, "database_id", database_id)
+    except Exception as error:
+        fetched = actions.execute_tool(
+            tool_name=NOTION_DB_FETCH_TOOL, tool_input={"database_id": database_id}, connection_name=connection, identifier=user
+        ).data
+        sources = _items(fetched, "data_sources")
+        if not sources:
+            raise error
+        return run(NOTION_DS_QUERY_TOOL, "data_source_id", str(sources[0].get("id")))
+
+
+def _notion_title(actions, connection: str, user: str, database_id: str) -> str:
+    try:
+        data = actions.execute_tool(
+            tool_name=NOTION_DB_FETCH_TOOL, tool_input={"database_id": database_id}, connection_name=connection, identifier=user
+        ).data
+    except Exception:
+        return database_id
+    if isinstance(data, dict):
+        data = data.get("data") if isinstance(data.get("data"), dict) and "title" not in data else data
+        return _plain(data.get("title")) or database_id
+    return database_id
+
+
+def _notion_markdown(actions, connection: str, user: str, page_id: str) -> str:
+    try:
+        data = actions.execute_tool(
+            tool_name=NOTION_MARKDOWN_TOOL, tool_input={"page_id": page_id}, connection_name=connection, identifier=user
+        ).data
+    except Exception:
+        return ""
+    if isinstance(data, dict):
+        for key in ("markdown", "content", "text"):
+            if isinstance(data.get(key), str):
+                return data[key].strip()
+        for key in ("data", "result", "response"):
+            if isinstance(data.get(key), dict):
+                return str(data[key].get("markdown") or "").strip()
+    return str(data or "").strip() if isinstance(data, str) else ""
+
+
+def pull_notion(actions, connection: str, user: str, databases: list[str], limit: int = 200, bodies: bool = True):
+    """Rows of each database as {id, database, title, url, created_at, edited_at, properties, body}.
+    Relation properties are turned from page ids into titles when the related row was pulled too."""
+    rows: list[dict] = []
+    for ref in databases:
+        database_id = notion_id(ref)
+        name = _notion_title(actions, connection, user, database_id)
+        batch = [normalize_notion_row(raw, name) for raw in _notion_rows(actions, connection, user, database_id, limit)]
+        if bodies:
+            for row in batch:
+                row["body"] = _notion_markdown(actions, connection, user, row["id"])
+        print(f"notion {name}: {len(batch)} rows")
+        rows += batch
+    titles = {row["id"]: row["title"] for row in rows}
+    for row in rows:
+        for key, value in row["properties"].items():
+            if isinstance(value, list) and value and all(v in titles for v in value):
+                row["properties"][key] = [titles[v] for v in value]
+    return rows
+
+
 # --- Entry point -------------------------------------------------------------
 
 
@@ -260,8 +413,10 @@ def pull(
     github_connection: str = "github",
     limit: int = 200,
     save_dir: str | None = None,
+    notion_databases: list[str] | None = None,
+    notion_connection: str | None = None,
 ) -> dict:
-    """Pull as ``user``; returns {"slack": [...], "github": [...]}, saving
+    """Pull as ``user``; returns {"slack": [...], "github": [...], "notion": [...]}, saving
     ``<save_dir>/<user>-<source>.json`` when ``save_dir`` is given."""
     actions = scalekit_actions()
     result: dict[str, list] = {}
@@ -271,6 +426,10 @@ def pull(
     if github_repo:
         ensure_authorized(actions, github_connection, user)
         result["github"] = pull_github(actions, github_connection, user, github_repo, limit)
+    if notion_databases:
+        notion_connection = notion_connection or os.getenv("SCALEKIT_NOTION_CONNECTION", "notion")
+        ensure_authorized(actions, notion_connection, user)
+        result["notion"] = pull_notion(actions, notion_connection, user, notion_databases, limit)
     if save_dir:
         for source, items in result.items():
             save(items, Path(save_dir) / f"{user}-{source}.json")
