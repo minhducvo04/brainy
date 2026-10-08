@@ -6,6 +6,7 @@
   python -m brain.cli forget --user alice
   python -m brain.cli eval --scenarios scenarios/scenarios.json --out runs/baseline.json
   python -m brain.cli pull --user alice@acme.com --slack-channels eng,general --github-repo owner/name --save
+  python -m brain.cli pull --user you@team.com --notion-databases <db-url>,<db-url> --save
   python -m brain.cli post --user alice@acme.com --to "#eng" --text "brief" --dry-run
 
 Scenario file: a list (or {"scenarios": [...]}) of {id, question, as_user|user}.
@@ -91,6 +92,8 @@ async def cmd_pull(args) -> None:
         github_connection=args.github_connection,
         limit=args.limit,
         save_dir=args.save,
+        notion_databases=[d.strip() for d in args.notion_databases.split(",") if d.strip()] if args.notion_databases else None,
+        notion_connection=args.notion_connection,
     )
     print(json.dumps({source: len(items) for source, items in result.items()}))
 
@@ -133,12 +136,14 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--out", required=True)
     s.set_defaults(fn=cmd_eval)
 
-    s = sub.add_parser("pull", help="pull Slack + GitHub as one user through Scalekit")
+    s = sub.add_parser("pull", help="pull Slack, GitHub and Notion as one user through Scalekit")
     s.add_argument("--user", required=True, help="Scalekit identifier, e.g. alice@acme.com")
     s.add_argument("--slack-channels", help="comma-separated channels (#name or id)")
     s.add_argument("--github-repo", help="owner/name")
     s.add_argument("--slack-connection", default="slack")
     s.add_argument("--github-connection", default="github")
+    s.add_argument("--notion-databases", help="comma-separated Notion database URLs or ids")
+    s.add_argument("--notion-connection", help="default: $SCALEKIT_NOTION_CONNECTION or notion")
     s.add_argument("--limit", type=int, default=200, help="max items per channel or list")
     s.add_argument(
         "--save", nargs="?", const="sample_data/recorded", default=None,
